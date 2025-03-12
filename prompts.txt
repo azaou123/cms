@@ -1,0 +1,771 @@
+we implementing this data model step by step in laravel vite auth (laravel) 
+.... we did it good for users and cells , everything is ok for now and we wanna 
+wor on chatting btw users  start from migrations of tables, for each file give its name first fin order to create it  .... and go on : classDiagram
+
+
+
+    class User {
+
+
+
+        +id: int
+
+
+
+        +name: string
+
+
+
+        +email: string
+
+
+
+        +password: string
+
+
+
+        +phone: string
+
+
+
+        +profile_picture: string
+
+
+
+        +bio: text
+
+
+
+        +join_date: date
+
+
+
+        +status: enum
+
+
+
+        +register()
+
+
+
+        +login()
+
+
+
+        +updateProfile()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Cell {
+
+
+
+        +id: int
+
+
+
+        +name: string
+
+
+
+        +description: text
+
+
+
+        +created_at: date
+
+
+
+        +status: enum
+
+
+
+        +createCell()
+
+
+
+        +updateCell()
+
+
+
+        +archiveCell()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Role {
+
+
+
+        +id: int
+
+
+
+        +name: string
+
+
+
+        +description: text
+
+
+
+        +permissions: json
+
+
+
+        +scope: enum
+
+
+
+        +createRole()
+
+
+
+        +assignPermissions()
+
+
+
+    }
+
+
+
+
+
+
+
+    class UserRole {
+
+
+
+        +id: int
+
+
+
+        +user_id: int
+
+
+
+        +role_id: int
+
+
+
+        +cell_id: int
+
+
+
+        +project_id: int
+
+
+
+        +board_id: int
+
+
+
+        +assigned_at: date
+
+
+
+        +status: enum
+
+
+
+        +assignRole()
+
+
+
+        +revokeRole()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Project {
+
+
+
+        +id: int
+
+
+
+        +name: string
+
+
+
+        +description: text
+
+
+
+        +start_date: date
+
+
+
+        +end_date: date
+
+
+
+        +status: enum
+
+
+
+        +budget: decimal
+
+
+
+        +cell_id: int
+
+
+
+        +createProject()
+
+
+
+        +updateStatus()
+
+
+
+        +archiveProject()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Board {
+
+
+
+        +id: int
+
+
+
+        +name: string
+
+
+
+        +description: text
+
+
+
+        +created_at: date
+
+
+
+        +cell_id: int
+
+
+
+        +createBoard()
+
+
+
+        +updateBoard()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Meeting {
+
+
+
+        +id: int
+
+
+
+        +title: string
+
+
+
+        +description: text
+
+
+
+        +date: date
+
+
+
+        +start_time: time
+
+
+
+        +end_time: time
+
+
+
+        +location: string
+
+
+
+        +type: enum
+
+
+
+        +cell_id: int
+
+
+
+        +project_id: int
+
+
+
+        +board_id: int
+
+
+
+        +scheduleMeeting()
+
+
+
+        +cancelMeeting()
+
+
+
+        +reschedule()
+
+
+
+    }
+
+
+
+
+
+
+
+    class MeetingAttendance {
+
+
+
+        +id: int
+
+
+
+        +meeting_id: int
+
+
+
+        +user_id: int
+
+
+
+        +status: enum
+
+
+
+        +notes: text
+
+
+
+        +recordAttendance()
+
+
+
+        +excuseAbsence()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Task {
+
+
+
+        +id: int
+
+
+
+        +title: string
+
+
+
+        +description: text
+
+
+
+        +due_date: date
+
+
+
+        +priority: enum
+
+
+
+        +status: enum
+
+
+
+        +project_id: int
+
+
+
+        +board_id: int
+
+
+
+        +createTask()
+
+
+
+        +assignTask()
+
+
+
+        +updateStatus()
+
+
+
+    }
+
+
+
+
+
+
+
+    class TaskAssignment {
+
+
+
+        +id: int
+
+
+
+        +task_id: int
+
+
+
+        +user_id: int
+
+
+
+        +assigned_at: date
+
+
+
+        +status: enum
+
+
+
+        +assignTask()
+
+
+
+        +completeTask()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Event {
+
+
+
+        +id: int
+
+
+
+        +title: string
+
+
+
+        +description: text
+
+
+
+        +start_date: date
+
+
+
+        +end_date: date
+
+
+
+        +location: string
+
+
+
+        +type: enum
+
+
+
+        +cell_id: int
+
+
+
+        +createEvent()
+
+
+
+        +cancelEvent()
+
+
+
+        +publishEvent()
+
+
+
+    }
+
+
+
+
+
+
+
+    class EventRegistration {
+
+
+
+        +id: int
+
+
+
+        +event_id: int
+
+
+
+        +user_id: int
+
+
+
+        +registration_date: date
+
+
+
+        +status: enum
+
+
+
+        +registerForEvent()
+
+
+
+        +cancelRegistration()
+
+
+
+    }
+
+
+
+
+
+
+
+    class Document {
+
+
+
+        +id: int
+
+
+
+        +title: string
+
+
+
+        +file_path: string
+
+
+
+        +file_type: string
+
+
+
+        +uploaded_at: date
+
+
+
+        +uploaded_by: int
+
+
+
+        +cell_id: int
+
+
+
+        +project_id: int
+
+
+
+        +board_id: int
+
+
+
+        +uploadDocument()
+
+
+
+        +archiveDocument()
+
+
+
+    }
+
+
+
+
+
+
+
+    User "1" -- "n" UserRole
+
+
+
+    Role "1" -- "n" UserRole
+
+
+
+    Cell "1" -- "n" UserRole
+
+
+
+    Project "1" -- "n" UserRole
+
+
+
+    Board "1" -- "n" UserRole
+
+
+
+
+
+
+
+    Cell "1" -- "n" Project
+
+
+
+    Cell "1" -- "n" Board
+
+
+
+    
+
+
+
+    Cell "1" -- "n" Meeting
+
+
+
+    Project "0..1" -- "n" Meeting
+
+
+
+    Board "0..1" -- "n" Meeting
+
+
+
+    
+
+
+
+    Meeting "1" -- "n" MeetingAttendance
+
+
+
+    User "1" -- "n" MeetingAttendance
+
+
+
+    
+
+
+
+    Project "1" -- "n" Task
+
+
+
+    Board "0..1" -- "n" Task
+
+
+
+    
+
+
+
+    Task "1" -- "n" TaskAssignment
+
+
+
+    User "1" -- "n" TaskAssignment
+
+
+
+    
+
+
+
+    Cell "1" -- "n" Event
+
+
+
+    Event "1" -- "n" EventRegistration
+
+
+
+    User "1" -- "n" EventRegistration
+
+
+
+    
+
+
+
+    User "1" -- "n" Document
+
+
+
+    Cell "0..1" -- "n" Document
+
+
+
+    Project "0..1" -- "n" Document
+
+
+
+    Board "0..1" -- "n" Document
