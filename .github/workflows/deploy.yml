@@ -12,4 +12,4 @@ jobs:
           username: ezyro_38543176
           password: f91bbeacb
           local-dir: ./
-          server-dir: /public_html/
+          server-dir: /public_html/public_html/
