@@ -5,20 +5,11 @@ jobs:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v3
-    
-    - name: 📂 Upload files via FTP
-      uses: sebastianpopp/ftp-action@v1
-      with:
-        host: ftpupload.net
-        user: ezyro_38543176
-        password: ${{ secrets.FTP_PASSWORD }}
-        localDir: "./"
-        remoteDir: "/public_html/"
-<<<<<<< HEAD
-
-        
-=======
-        
->>>>>>> 76f57edecc0f061c14045085e88e8a39de72c1b0
+      - name: 📂 Sync files via FTP
+        uses: sebastianpopp/ftp-action@v1.0.1  # Use an available version
+        with:
+          host: ftpupload.net
+          user: ezyro_38543176
+          password: ${{ secrets.FTP_PASSWORD }}
+          localDir: "./"
+          remoteDir: "/public_html/"
