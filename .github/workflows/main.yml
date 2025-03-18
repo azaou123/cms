@@ -8,9 +8,11 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v3
     
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+    - name: 📂 Upload files via FTP
+      uses: sebastianpopp/ftp-action@v1
       with:
-        server: ftpupload.net
-        username: ezyro_38543176
+        host: ftpupload.net
+        user: ezyro_38543176
         password: ${{ secrets.FTP_PASSWORD }}
+        localDir: "./"
+        remoteDir: "/public_html/"
