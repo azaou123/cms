@@ -16,5 +16,9 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         localDir: "./"
         remoteDir: "/public_html/"
+<<<<<<< HEAD
 
         
+=======
+        
+>>>>>>> 76f57edecc0f061c14045085e88e8a39de72c1b0
