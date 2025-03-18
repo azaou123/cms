@@ -12,6 +12,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ClubSettingsController;
 
 
 Route::get('/', function () {
@@ -96,3 +97,29 @@ Route::patch('registrations/{registration}/status', [EventRegistrationController
 
 Route::get('/messages/{conversation}', [MessageController::class, 'pollMessages'])->name('messages.poll');
 Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
+
+
+
+Route::prefix('settings')->name('settings.')->group(function () {
+    Route::get('/', [ClubSettingsController::class, 'index'])->name('index');
+    
+    // General Settings
+    Route::get('/general', [ClubSettingsController::class, 'showGeneralSettings'])->name('general');
+    Route::post('/general', [ClubSettingsController::class, 'updateGeneralSettings'])->name('general.update');
+    
+    // Social Media Settings
+    Route::get('/social-media', [ClubSettingsController::class, 'showSocialMediaSettings'])->name('social-media');
+    Route::post('/social-media', [ClubSettingsController::class, 'updateSocialMediaSettings'])->name('social-media.update');
+    
+    // System Settings
+    Route::get('/system', [ClubSettingsController::class, 'showSystemSettings'])->name('system');
+    Route::post('/system', [ClubSettingsController::class, 'updateSystemSettings'])->name('system.update');
+    
+    // Appearance Settings
+    Route::get('/appearance', [ClubSettingsController::class, 'showAppearanceSettings'])->name('appearance');
+    Route::post('/appearance', [ClubSettingsController::class, 'updateAppearanceSettings'])->name('appearance.update');
+    
+    // Notification Settings
+    Route::get('/notifications', [ClubSettingsController::class, 'showNotificationSettings'])->name('notifications');
+    Route::post('/notifications', [ClubSettingsController::class, 'updateNotificationSettings'])->name('notifications.update');
+});
