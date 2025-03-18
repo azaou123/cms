@@ -5,11 +5,11 @@ jobs:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: 📂 Sync files via FTP
-        uses: sebastianpopp/ftp-action@v1.0.1  # Use an available version
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # Change back to this action if it's working
         with:
-          host: ftpupload.net
-          user: ezyro_38543176
+          server: ftpupload.net
+          username: ezyro_38543176
           password: ${{ secrets.FTP_PASSWORD }}
-          localDir: "./"
-          remoteDir: "/public_html/"
+          local-dir: ./
+          server-dir: /public_html/
