@@ -10,6 +10,6 @@ jobs:
         with:
           server: ftpupload.net
           username: ezyro_38543176
-          password: ${{ secrets.FTP_PASSWORD }}
+          password: f91bbeacb
           local-dir: ./
           server-dir: /public_html/
