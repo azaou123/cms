@@ -114,3 +114,6 @@ Le fichier `settings/appearance` permet aux administrateurs de modifier l'appare
 Ce projet est sous licence MIT. Libre d'utilisation et de modification.  
 
 💡 **Développé avec ❤️ en Laravel**  
+
+
+
