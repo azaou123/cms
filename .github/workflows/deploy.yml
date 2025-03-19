@@ -9,7 +9,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # Change back to this action if it's working
         with:
           server: ftpupload.net
-          username: ezyro_38543176
-          password: f91bbeacb
+          username: ezyro_38558454
+          password: 6076150c531
           local-dir: ./
           server-dir: ./htdocs/
