@@ -3,21 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\ClubSetting;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
+     * Redirect based on auth status
      *
-     * @return void
+     * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function __construct()
+    public function redirectToApp()
     {
-        $this->middleware('auth');
+        if (Auth::check()) {
+            return redirect()->route('home');
+        }
+        $settings = ClubSetting::first();
+        return view('welcome', compact('settings'));
     }
 
     /**
-     * Show the application dashboard.
+     * Show the application dashboard (for authenticated users).
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */

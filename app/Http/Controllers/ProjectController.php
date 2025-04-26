@@ -78,9 +78,9 @@ class ProjectController extends Controller
     {
         $cells = Cell::all();
         $users = User::all();
-        $manager = $project->manager()->first(); 
+        $manager = $project->manager()->first();
         $teamMembers = $project->teamMembers()->pluck('users.id')->toArray();
-        
+
         return view('projects.edit', compact('project', 'cells', 'users', 'manager', 'teamMembers'));
     }
 
@@ -148,12 +148,12 @@ class ProjectController extends Controller
 
         if ($request->action == 'add') {
             $isManager = $request->role == 'manager';
-            
+
             // If adding a manager, remove the current manager first
             if ($isManager) {
                 $project->users()->wherePivot('is_manager', true)->detach();
             }
-            
+
             $project->users()->syncWithoutDetaching([
                 $request->user_id => [
                     'is_manager' => $isManager,
@@ -162,7 +162,7 @@ class ProjectController extends Controller
                     'status' => 'active'
                 ]
             ]);
-            
+
             $message = 'Team member added successfully';
         } else {
             $project->users()->detach($request->user_id);
@@ -176,7 +176,7 @@ class ProjectController extends Controller
     public function search(Request $request)
     {
         $query = User::query();
-        
+
         // Filter by search query (name)
         if ($request->has('q')) {
             $query->where('name', 'like', '%' . $request->q . '%');

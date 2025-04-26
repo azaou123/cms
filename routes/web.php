@@ -14,15 +14,14 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ClubSettingsController;
 
+Route::get('/', [HomeController::class, 'redirectToApp']);
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 // Auth routes - this single line replaces all the individual auth routes
 Auth::routes();
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+
 
 // Profile routes
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -39,15 +38,16 @@ Route::delete('/cells/{cell}/members/{user}', [CellController::class, 'removeMem
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-    Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
-    Route::put('/projects/{project}', [ProjectController::class, 'updateTeam'])->name('projects.updateTeam');
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
-    Route::get('/users/search', [ProjectController::class, 'search'])->name('users.search');
+
+    // Additional routes for team management and searching
+    Route::post('/projects/{project}/team', [ProjectController::class, 'updateTeam'])->name('projects.updateTeam');
+    Route::get('/projects/search', [ProjectController::class, 'search'])->name('projects.search');
 });
 
 Route::middleware(['auth'])->group(function () {

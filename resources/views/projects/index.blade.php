@@ -12,9 +12,9 @@
 
                 <div class="card-body">
                     @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
                     @endif
 
                     <div class="table-responsive">
@@ -33,44 +33,51 @@
                             </thead>
                             <tbody>
                                 @forelse ($projects as $project)
-                                    <tr>
-                                        <td>{{ $project->name }}</td>
-                                        <td>{{ $project->cell->name }}</td>
-                                        <td>
-                                            @php
-                                                $manager = $project->users()->wherePivot('is_manager', true)->first();
-                                            @endphp
-                                            {{ $manager ? $manager->name : 'No manager assigned' }}
-                                        </td>
-                                        <td>{{ $project->start_date->format('M d, Y') }}</td>
-                                        <td>{{ $project->end_date ? $project->end_date->format('M d, Y') : 'Not set' }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ 
+                                <tr>
+                                    <td>{{ $project->name }}</td>
+                                    <td>{{ $project->cell->name }}</td>
+                                    <td>
+                                        @php
+                                        $manager = $project->users()->wherePivot('is_manager', true)->first();
+                                        @endphp
+                                        {{ $manager ? $manager->name : 'No manager assigned' }}
+                                    </td>
+                                    <td>{{ $project->start_date->format('M d, Y') }}</td>
+                                    <td>{{ $project->end_date ? $project->end_date->format('M d, Y') : 'Not set' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 
                                                 $project->status == 'planning' ? 'secondary' : 
                                                 ($project->status == 'in_progress' ? 'primary' : 
                                                 ($project->status == 'on_hold' ? 'warning' : 
                                                 ($project->status == 'completed' ? 'success' : 'dark'))) 
                                             }}">
-                                                {{ ucfirst(str_replace('_', ' ', $project->status)) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $project->users->count() }}</td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-info">View</a>
-                                                <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-primary">Edit</a>
-                                                <form action="{{ route('projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            {{ ucfirst(str_replace('_', ' ', $project->status)) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $project->users->count() }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-info ms-1">
+                                                <i class="fas fa-eye"></i> <!-- View Icon -->
+                                            </a>
+                                            <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-primary ms-1">
+                                                <i class="fas fa-edit"></i> <!-- Edit Icon -->
+                                            </a>
+                                            <form action="{{ route('projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger ms-1">
+                                                    <i class="fas fa-trash"></i> <!-- Delete Icon -->
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="8" class="text-center">No projects found</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="8" class="text-center">No projects found</td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
