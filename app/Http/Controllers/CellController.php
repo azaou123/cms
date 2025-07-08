@@ -17,7 +17,7 @@ class CellController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -110,9 +110,9 @@ class CellController extends Controller
      */
     public function manageMembers(Cell $cell)
     {
-        $members = $cell->members;
+        $members = $cell->members()->paginate(7);
         $users = \App\Models\User::whereNotIn('id', $members->pluck('id'))->get();
-        
+
         return view('cells.members', compact('cell', 'members', 'users'));
     }
 

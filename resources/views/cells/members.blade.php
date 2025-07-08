@@ -104,7 +104,7 @@
                                                             <i class="bi bi-chat-dots"></i>
                                                         </button>
                                                     </form>
-                                                    
+
                                                     <!-- Remove Button -->
                                                     <form action="{{ route('cells.members.remove', [$cell, $member->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to remove this member?') }}');">
                                                         @csrf
@@ -119,6 +119,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                {{ $members->links('pagination::bootstrap-5') }}
                             </div>
                             @else
                             <div class="text-center py-5">
@@ -239,20 +240,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     // User data for search (this should be passed from your controller)
     const users = {!! json_encode(($users ?? collect())->toArray()) !!};
-    
+
     // Member search functionality
     const memberSearch = document.getElementById('memberSearch');
     const membersTable = document.getElementById('membersTable');
-    
+
     if (memberSearch && membersTable) {
         memberSearch.addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = membersTable.querySelectorAll('.member-row');
-            
+
             rows.forEach(row => {
                 const name = row.querySelector('.member-name').textContent.toLowerCase();
                 const email = row.querySelector('.member-email').textContent.toLowerCase();
-                
+
                 if (name.includes(searchTerm) || email.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
@@ -261,29 +262,29 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // User search for adding new members
     const userSearch = document.getElementById('user_search');
     const userDropdown = document.getElementById('user_dropdown');
     const userIdInput = document.getElementById('user_id');
     const addMemberBtn = document.getElementById('addMemberBtn');
-    
+
     if (userSearch && userDropdown && userIdInput) {
         userSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
-            
+
             if (searchTerm.length < 2) {
                 userDropdown.style.display = 'none';
                 userIdInput.value = '';
                 addMemberBtn.disabled = true;
                 return;
             }
-            
-            const filteredUsers = users.filter(user => 
-                user.name.toLowerCase().includes(searchTerm) || 
+
+            const filteredUsers = users.filter(user =>
+                user.name.toLowerCase().includes(searchTerm) ||
                 user.email.toLowerCase().includes(searchTerm)
             );
-            
+
             if (filteredUsers.length > 0) {
                 userDropdown.innerHTML = filteredUsers.map(user => `
                     <div class="dropdown-item-custom p-2 border-bottom cursor-pointer" data-user-id="${user.id}" data-user-name="${user.name}">
@@ -298,25 +299,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 `).join('');
-                
+
                 userDropdown.style.display = 'block';
-                
+
                 // Add click handlers to dropdown items
                 userDropdown.querySelectorAll('.dropdown-item-custom').forEach(item => {
                     item.addEventListener('click', function() {
                         const userId = this.getAttribute('data-user-id');
                         const userName = this.getAttribute('data-user-name');
-                        
+
                         userSearch.value = userName;
                         userIdInput.value = userId;
                         userDropdown.style.display = 'none';
                         addMemberBtn.disabled = false;
                     });
-                    
+
                     item.addEventListener('mouseenter', function() {
                         this.style.backgroundColor = '#f8f9fa';
                     });
-                    
+
                     item.addEventListener('mouseleave', function() {
                         this.style.backgroundColor = '';
                     });
@@ -326,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 userDropdown.style.display = 'block';
             }
         });
-        
+
         // Hide dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!userSearch.contains(e.target) && !userDropdown.contains(e.target)) {
@@ -334,14 +335,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Auto-submit role update forms with confirmation
     document.querySelectorAll('.role-update-form select').forEach(select => {
         select.addEventListener('change', function() {
             const form = this.closest('.role-update-form');
             const memberName = form.closest('tr').querySelector('.member-name').textContent;
             const newRole = this.value;
-            
+
             if (confirm(`{{ __('Are you sure you want to change the role of') }} ${memberName} {{ __('to') }} ${newRole}?`)) {
                 // Don't auto-submit, let user click the button
                 form.querySelector('button[type="submit"]').style.backgroundColor = '#198754';
@@ -351,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.value = this.getAttribute('data-original-value') || 'member';
             }
         });
-        
+
         // Store original value
         select.setAttribute('data-original-value', select.value);
     });
