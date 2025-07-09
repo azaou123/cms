@@ -14,13 +14,15 @@
                     </a>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body" >
                     @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show"   role="alert">
+
                         <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     @endif
+                    <div id="alert-container"></div>
 
                     <div class="row">
                         <!-- Current Members -->
@@ -82,9 +84,11 @@
                                                                 <i class="bi bi-person"></i> Member
                                                             </option>
                                                         </select>
-                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
+                                                        <button type="submit"  class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
                                                             <i class="bi bi-check-lg"></i>
+                                                            <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true" style="display:none;"></span>
                                                         </button>
+
                                                     </div>
                                                 </form>
                                             </td>
@@ -111,6 +115,7 @@
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('Remove Member') }}">
                                                             <i class="bi bi-person-dash"></i>
+                                                            <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="display:none;"></span>
                                                         </button>
                                                     </form>
                                                 </div>
@@ -336,6 +341,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function afficherMessage(type, message) {
+        const container = document.getElementById('alert-container');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        }
+
+
     // Auto-submit role update forms with confirmation
     document.querySelectorAll('.role-update-form select').forEach(select => {
         select.addEventListener('change', function() {
@@ -344,9 +362,53 @@ document.addEventListener('DOMContentLoaded', function() {
             const newRole = this.value;
 
             if (confirm(`{{ __('Are you sure you want to change the role of') }} ${memberName} {{ __('to') }} ${newRole}?`)) {
+
+                // splinter buttons for change role
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const btnText = submitBtn.querySelector('.bi-check-lg');
+                const spinner = submitBtn.querySelector('.spinner-border-sm');
+
+
+                btnText.style.display = 'none';          // cacher le texte
+                spinner.style.display = 'inline-block';  // afficher le spinner
+                submitBtn.disabled = true;                // désactiver le bouton
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+                })
+                .then(response => {
+                if (!response.ok) throw new Error('Erreur réseau');
+                return response.json();
+                })
+                .then(data => {
+                if (data.success) {
+                    afficherMessage('success', data.message || 'Rôle mis à jour avec succès !');
+                    originalRole = this.value;
+                } else {
+                    this.value = originalRole;
+                    afficherMessage('danger', data.message || 'Erreur lors de la mise à jour');
+                }
+                })
+                .catch(error => {
+                    this.value = originalRole;
+                    afficherMessage('danger', error.message || 'Erreur lors de la connexion');
+                })
+                .finally(() => {
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    btnText.style.display='inline-block'
+                });
+
+
                 // Don't auto-submit, let user click the button
-                form.querySelector('button[type="submit"]').style.backgroundColor = '#198754';
-                form.querySelector('button[type="submit"]').style.borderColor = '#198754';
+                // form.querySelector('button[type="submit"]').style.backgroundColor = '#198754';
+                // form.querySelector('button[type="submit"]').style.borderColor = '#198754';
             } else {
                 // Reset to original value
                 this.value = this.getAttribute('data-original-value') || 'member';
@@ -356,6 +418,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store original value
         select.setAttribute('data-original-value', select.value);
     });
+
+
 });
 </script>
 
