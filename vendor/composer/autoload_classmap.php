@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Events\\MessageSent' => $baseDir . '/app/Events/MessageSent.php',
     'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
     'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
     'App\\Http\\Controllers\\Auth\\LoginController' => $baseDir . '/app/Http/Controllers/Auth/LoginController.php',
@@ -13,6 +14,7 @@ return array(
     'App\\Http\\Controllers\\Auth\\ResetPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ResetPasswordController.php',
     'App\\Http\\Controllers\\Auth\\VerificationController' => $baseDir . '/app/Http/Controllers/Auth/VerificationController.php',
     'App\\Http\\Controllers\\CellController' => $baseDir . '/app/Http/Controllers/CellController.php',
+    'App\\Http\\Controllers\\ClubSettingsController' => $baseDir . '/app/Http/Controllers/ClubSettingsController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\ConversationController' => $baseDir . '/app/Http/Controllers/ConversationController.php',
     'App\\Http\\Controllers\\EventController' => $baseDir . '/app/Http/Controllers/EventController.php',
@@ -24,6 +26,7 @@ return array(
     'App\\Http\\Controllers\\ProfileController' => $baseDir . '/app/Http/Controllers/ProfileController.php',
     'App\\Http\\Controllers\\ProjectController' => $baseDir . '/app/Http/Controllers/ProjectController.php',
     'App\\Models\\Cell' => $baseDir . '/app/Models/Cell.php',
+    'App\\Models\\ClubSetting' => $baseDir . '/app/Models/ClubSetting.php',
     'App\\Models\\Conversation' => $baseDir . '/app/Models/Conversation.php',
     'App\\Models\\Event' => $baseDir . '/app/Models/Event.php',
     'App\\Models\\EventRegistration' => $baseDir . '/app/Models/EventRegistration.php',
@@ -4750,6 +4753,13 @@ return array(
     'Psy\\VersionUpdater\\IntervalChecker' => $vendorDir . '/psy/psysh/src/VersionUpdater/IntervalChecker.php',
     'Psy\\VersionUpdater\\NoopChecker' => $vendorDir . '/psy/psysh/src/VersionUpdater/NoopChecker.php',
     'Psy\\VersionUpdater\\SelfUpdate' => $vendorDir . '/psy/psysh/src/VersionUpdater/SelfUpdate.php',
+    'Pusher\\ApiErrorException' => $vendorDir . '/pusher/pusher-php-server/src/ApiErrorException.php',
+    'Pusher\\Pusher' => $vendorDir . '/pusher/pusher-php-server/src/Pusher.php',
+    'Pusher\\PusherCrypto' => $vendorDir . '/pusher/pusher-php-server/src/PusherCrypto.php',
+    'Pusher\\PusherException' => $vendorDir . '/pusher/pusher-php-server/src/PusherException.php',
+    'Pusher\\PusherInstance' => $vendorDir . '/pusher/pusher-php-server/src/PusherInstance.php',
+    'Pusher\\PusherInterface' => $vendorDir . '/pusher/pusher-php-server/src/PusherInterface.php',
+    'Pusher\\Webhook' => $vendorDir . '/pusher/pusher-php-server/src/Webhook.php',
     'Ramsey\\Collection\\AbstractArray' => $vendorDir . '/ramsey/collection/src/AbstractArray.php',
     'Ramsey\\Collection\\AbstractCollection' => $vendorDir . '/ramsey/collection/src/AbstractCollection.php',
     'Ramsey\\Collection\\AbstractSet' => $vendorDir . '/ramsey/collection/src/AbstractSet.php',
