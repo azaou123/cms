@@ -12,4 +12,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_TARGET_DIR }}
-          local-dir: ./  # or ./dist if you’re using a build step
+          local-dir: ./
