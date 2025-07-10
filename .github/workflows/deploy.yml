@@ -1,15 +1,23 @@
-on: push
-name: 🚀 Deploy website on push
+on:
+  push:
+    branches:
+      - master  # Only run when pushing to master
+
+name: 🚀 Deploy website on push to master
+
 jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # Change back to this action if it's working
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📤 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ftpupload.net
-          username: ezyro_38558454
-          password: 6076150c531
-          local-dir: ./
-          server-dir: ./htdocs/public_html/
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_TARGET_DIR }}
+          local-dir: ./  # Adjust if needed (e.g., ./dist)
