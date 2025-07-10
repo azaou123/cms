@@ -96,6 +96,8 @@ Route::patch('registrations/{registration}/status', [EventRegistrationController
 
 
 Route::get('/messages/{conversation}', [MessageController::class, 'pollMessages'])->name('messages.poll');
+Route::get('/conversations/{conversation}/messages/latest', [MessageController::class, 'latest'])->name('messages.latest');
+Route::match(['get', 'post'], '/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('messages.typing');
 Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
 
 
