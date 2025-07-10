@@ -1,15 +1,20 @@
 on: push
+
 name: 🚀 Deploy website on push
+
 jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # Change back to this action if it's working
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📤 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_TARGET_DIR }}
-          local-dir: ./
+          local-dir: ./  # or ./dist if you're using a build step
