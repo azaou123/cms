@@ -77,7 +77,6 @@
                                 </div>
                             @endif
                             
-                            
                             <div class="d-flex {{ $message->user_id === auth()->id() ? 'justify-content-end' : 'justify-content-start' }} mb-3" 
                                 data-message-id="{{ $message->id }}">
                                 
