@@ -1,24 +1,15 @@
-name: 🚀 FTP Deploy
-
-on:
-  push:
-    branches:
-      - main  # or 'master' or any branch you deploy from
-
+on: push
+name: 🚀 Deploy website on push
 jobs:
-  ftp-deploy:
-    name: 📦 Deploy to FTP Server
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
-
     steps:
-    - name: 📥 Checkout Repo
-      uses: actions/checkout@v4
-
-    - name: 📤 FTP Deploy
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: ${{ secrets.FTP_TARGET_DIR }}
-        local-dir: ./  # or ./dist if you’re using a build step
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # Change back to this action if it's working
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_TARGET_DIR }}
+          local-dir: ./  # or ./dist if you’re using a build step
