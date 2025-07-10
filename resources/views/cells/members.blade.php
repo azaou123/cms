@@ -14,13 +14,15 @@
                     </a>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body" >
                     @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show"   role="alert">
+
                         <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     @endif
+                    <div id="alert-container"></div>
 
                     <div class="row">
                         <!-- Current Members -->
@@ -82,9 +84,11 @@
                                                                 Member
                                                             </option>
                                                         </select>
-                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
+                                                        <button type="submit"  class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
                                                             <i class="bi bi-check-lg"></i>
+                                                            <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true" style="display:none;"></span>
                                                         </button>
+
                                                     </div>
                                                 </form>
                                             </td>
@@ -104,7 +108,7 @@
                                                             <i class="bi bi-chat-dots"></i>
                                                         </button>
                                                     </form>
-                                                    
+
                                                     <!-- Remove Button -->
                                                     <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn" 
                                                             title="{{ __('Remove Member') }}"
@@ -119,6 +123,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                {{ $members->links('pagination::bootstrap-5') }}
                             </div>
                             @else
                             <div class="text-center py-5">
@@ -317,16 +322,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Member search functionality
     const memberSearch = document.getElementById('memberSearch');
     const membersTable = document.getElementById('membersTable');
-    
+
     if (memberSearch && membersTable) {
         memberSearch.addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = membersTable.querySelectorAll('.member-row');
-            
+
             rows.forEach(row => {
                 const name = row.querySelector('.member-name').textContent.toLowerCase();
                 const email = row.querySelector('.member-email').textContent.toLowerCase();
-                
+
                 if (name.includes(searchTerm) || email.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
@@ -335,29 +340,29 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // User search for adding new members
     const userSearch = document.getElementById('user_search');
     const userDropdown = document.getElementById('user_dropdown');
     const userIdInput = document.getElementById('user_id');
     const addMemberBtn = document.getElementById('addMemberBtn');
-    
+
     if (userSearch && userDropdown && userIdInput) {
         userSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
-            
+
             if (searchTerm.length < 2) {
                 userDropdown.style.display = 'none';
                 userIdInput.value = '';
                 addMemberBtn.disabled = true;
                 return;
             }
-            
-            const filteredUsers = users.filter(user => 
-                user.name.toLowerCase().includes(searchTerm) || 
+
+            const filteredUsers = users.filter(user =>
+                user.name.toLowerCase().includes(searchTerm) ||
                 user.email.toLowerCase().includes(searchTerm)
             );
-            
+
             if (filteredUsers.length > 0) {
                 userDropdown.innerHTML = filteredUsers.map(user => `
                     <div class="dropdown-item-custom p-2 border-bottom" data-user-id="${user.id}" data-user-name="${user.name}" style="cursor: pointer;">
@@ -372,25 +377,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 `).join('');
-                
+
                 userDropdown.style.display = 'block';
-                
+
                 // Add click handlers to dropdown items
                 userDropdown.querySelectorAll('.dropdown-item-custom').forEach(item => {
                     item.addEventListener('click', function() {
                         const userId = this.getAttribute('data-user-id');
                         const userName = this.getAttribute('data-user-name');
-                        
+
                         userSearch.value = userName;
                         userIdInput.value = userId;
                         userDropdown.style.display = 'none';
                         addMemberBtn.disabled = false;
                     });
-                    
+
                     item.addEventListener('mouseenter', function() {
                         this.style.backgroundColor = '#f8f9fa';
                     });
-                    
+
                     item.addEventListener('mouseleave', function() {
                         this.style.backgroundColor = '';
                     });
@@ -400,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 userDropdown.style.display = 'block';
             }
         });
-        
+
         // Hide dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!userSearch.contains(e.target) && !userDropdown.contains(e.target)) {

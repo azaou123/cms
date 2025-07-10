@@ -17,7 +17,7 @@ class CellController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -110,9 +110,9 @@ class CellController extends Controller
      */
     public function manageMembers(Cell $cell)
     {
-        $members = $cell->members;
+        $members = $cell->members()->paginate(7);
         $users = \App\Models\User::whereNotIn('id', $members->pluck('id'))->get();
-        
+
         return view('cells.members', compact('cell', 'members', 'users'));
     }
 
@@ -140,11 +140,27 @@ class CellController extends Controller
         $validated = $request->validate([
             'role' => 'required|string|max:50',
         ]);
+        $count = $cell->members()->updateExistingPivot($userId, ['role' => $validated['role']]);
 
-        $cell->members()->updateExistingPivot($userId, ['role' => $validated['role']]);
+        if ($request->ajax()) {
+            if ($count > 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Member role updated successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No member was updated. Check if the user belongs to this cell.'
+                ], 404);
+            }
+        }
 
-        return redirect()->route('cells.members', $cell)
-            ->with('success', 'Member role updated successfully.');
+
+        // $cell->members()->updateExistingPivot($userId, ['role' => $validated['role']]);
+
+        // return redirect()->route('cells.members', $cell)
+        //     ->with('success', 'Member role updated successfully.');
     }
 
     /**
