@@ -1,6 +1,9 @@
-on: push
+on:
+  push:
+    branches:
+      - master  # Only run when pushing to master
 
-name: 🚀 Deploy website on push
+name: 🚀 Deploy website on push to master
 
 jobs:
   web-deploy:
@@ -17,4 +20,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_TARGET_DIR }}
-          local-dir: ./  # or ./dist if you're using a build step
+          local-dir: ./  # Adjust if needed (e.g., ./dist)
