@@ -110,7 +110,7 @@
                                                     </form>
 
                                                     <!-- Remove Button -->
-                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn" 
+                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn"
                                                             title="{{ __('Remove Member') }}"
                                                             data-member-id="{{ $member->id }}"
                                                             data-member-name="{{ $member->name }}"
@@ -273,30 +273,30 @@
 document.addEventListener('DOMContentLoaded', function() {
     // User data for search
     const users = @json($users ?? []);
-    
+
     // Custom Alert Functions
     window.showCustomAlert = function(title, message, confirmCallback) {
         document.getElementById('alertTitle').textContent = title;
         document.getElementById('alertMessage').textContent = message;
         document.getElementById('customAlert').style.display = 'flex';
-        
+
         document.getElementById('confirmAlertBtn').onclick = function() {
             closeCustomAlert();
             if (confirmCallback) confirmCallback();
         };
     };
-    
+
     window.closeCustomAlert = function() {
         document.getElementById('customAlert').style.display = 'none';
     };
-    
+
     window.showToast = function(message, type = 'success') {
         const toast = document.getElementById('customToast');
         const icon = document.getElementById('toastIcon');
         const messageEl = document.getElementById('toastMessage');
-        
+
         messageEl.textContent = message;
-        
+
         if (type === 'success') {
             icon.className = 'bi bi-check-circle-fill me-2 text-success';
             toast.style.backgroundColor = '#d1e7dd';
@@ -306,19 +306,19 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.style.backgroundColor = '#f8d7da';
             toast.style.borderLeft = '4px solid #dc3545';
         }
-        
+
         toast.style.display = 'flex';
-        
+
         // Auto hide after 4 seconds
         setTimeout(() => {
             closeToast();
         }, 4000);
     };
-    
+
     window.closeToast = function() {
         document.getElementById('customToast').style.display = 'none';
     };
-    
+
     // Member search functionality
     const memberSearch = document.getElementById('memberSearch');
     const membersTable = document.getElementById('membersTable');
@@ -413,13 +413,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Remove member functionality
     document.querySelectorAll('.remove-member-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const memberName = this.getAttribute('data-member-name');
             const removeUrl = this.getAttribute('data-remove-url');
-            
+
             showCustomAlert(
                 'Remove Member',
                 `Are you sure you want to remove ${memberName} from this cell? This action cannot be undone.`,
@@ -431,30 +431,62 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
     });
-    
+
     // Role update confirmation
     document.querySelectorAll('.role-update-form select').forEach(select => {
         const originalValue = select.value;
-        
+
         select.addEventListener('change', function() {
             const form = this.closest('.role-update-form');
             const memberName = form.closest('tr').querySelector('.member-name').textContent;
             const newRole = this.value;
             const selectElement = this;
-            
+
             showCustomAlert(
                 'Change Role',
                 `Are you sure you want to change ${memberName}'s role to ${newRole}?`,
                 function() {
                     // Highlight the update button
                     const updateBtn = form.querySelector('button[type="submit"]');
-                    updateBtn.style.backgroundColor = '#198754';
-                    updateBtn.style.borderColor = '#198754';
-                    updateBtn.classList.add('pulse');
-                    showToast('Role changed! Click the save button to confirm.');
+                    const iconBtn=updateBtn.querySelector('.bi-check-lg')
+                    const spinerBtn=updateBtn.querySelector('.spinner-border');
+                    iconBtn.style.display="none";
+                    spinerBtn.style.display="inline-block";
+                    spinerBtn.disabled = true;
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                    })
+                    .then(response => {
+                    if (!response.ok) throw new Error('Erreur réseau');
+                    return response.json();
+                    })
+                    .then(data => {
+                    if (data.success) {
+                        updateBtn.classList.add('pulse');
+                        showToast('Role changed! Click the save button to confirm.');
+                    } else {
+                        selectRole.value = originalRole;
+                        afficherMessage('danger', data.message || 'Erreur lors de la mise à jour');
+                    }
+                    })
+                    .catch(error => {
+                       afficherMessage('danger', error.message || 'Erreur lors de la connexion');
+                    })
+                    .finally(() => {
+                        iconBtn.style.display="inline-block";
+                        spinerBtn.style.display="none";
+                    });
+                    // updateBtn.style.backgroundColor = '#198754';
+                    // updateBtn.style.borderColor = '#198754';
+
                 }
             );
-            
+
             // Reset if modal is closed without confirmation
             const alertOverlay = document.getElementById('customAlert');
             const handleOverlayClick = function(e) {
@@ -466,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alertOverlay.addEventListener('click', handleOverlayClick);
         });
     });
-    
+
     // Add member form validation
     document.getElementById('addMemberForm').addEventListener('submit', function(e) {
         const userIdInput = document.getElementById('user_id');
@@ -475,20 +507,20 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Please select a user first', 'error');
             return false;
         }
-        
+
         // Show loading state
         const btn = document.getElementById('addMemberBtn');
         btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Adding...';
         btn.disabled = true;
     });
-    
+
     // Show session messages
     @if (session('success'))
         setTimeout(() => {
             showToast('{{ session('success') }}', 'success');
         }, 500);
     @endif
-    
+
     @if (session('error'))
         setTimeout(() => {
             showToast('{{ session('error') }}', 'error');
