@@ -48,7 +48,6 @@
         
         <div class="card-body p-0">
             <div class="d-flex flex-column" style="height: 65vh;">
-                <!-- Message container with subtle gradient background -->
                 <div class="flex-grow-1 overflow-auto p-4" id="message-container" 
                      style="background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);"
                      data-last-message-id="{{ $messages->max('id') ?? 0 }}">
@@ -60,7 +59,6 @@
                             <p class="small">Start the conversation by sending a message</p>
                         </div>
                     @else
-                        <!-- Date separator for first message -->
                         <div class="text-center my-3">
                             <span class="badge bg-light text-dark fw-normal">
                                 {{ $messages->first()->created_at->format('F j, Y') }}
@@ -68,7 +66,6 @@
                         </div>
                         
                         @foreach($messages as $message)
-                            <!-- Add date separator when date changes -->
                             @if(!$loop->first && $message->created_at->format('Y-m-d') != $messages[$loop->index-1]->created_at->format('Y-m-d'))
                                 <div class="text-center my-3">
                                     <span class="badge bg-light text-dark fw-normal">
@@ -81,7 +78,6 @@
                                 data-message-id="{{ $message->id }}">
                                 
                                 @if($message->user_id !== auth()->id())
-                                    <!-- Avatar shown only for other users -->
                                     @if($loop->first || $message->user_id !== $messages[$loop->index - 1]->user_id)
                                         <div class="me-2">
                                             <img src="{{ $message->user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($message->user->name) }}" 
@@ -90,7 +86,6 @@
                                                 style="width: 40px; height: 40px; object-fit: cover;">
                                         </div>
                                     @else
-                                        <!-- To align with no-avatar messages -->
                                         <div class="me-2" style="width: 40px;"></div>
                                     @endif
                                 @endif
@@ -131,17 +126,15 @@
                                     </div>
                                 </div>
                             </div>
-
                         @endforeach
                     @endif
                 </div>
                 
-                <!-- Message input area with sticky bottom -->
-                <div class="border-top bg-light p-3 sticky-bottom">
+                <div class="border-top bg-light p-3 sticky-bottom" style="position: relative;">
                     <form id="message-form" method="POST" action="{{ route('messages.store', $conversation) }}" enctype="multipart/form-data">
                         @csrf
                         <div class="input-group has-validation">
-                            <textarea name="body" rows="1" class="form-control border-0 shadow-sm @error('body') is-invalid @enderror" 
+                            <textarea name="body" id="message-input" rows="1" class="form-control border-0 shadow-sm @error('body') is-invalid @enderror" 
                                       placeholder="Type a message..." style="resize: none; border-radius: 20px !important;"></textarea>
                             
                             <div class="input-group-append ms-2 d-flex align-items-center">
@@ -150,7 +143,7 @@
                                         <i class="bi bi-paperclip"></i>
                                         <input type="file" id="attachments" name="attachments[]" multiple class="d-none">
                                     </label>
-                                    <button type="button" class="btn btn-light rounded-circle" title="Emoji">
+                                    <button type="button" id="emoji-button" class="btn btn-light rounded-circle" title="Emoji">
                                         <i class="bi bi-emoji-smile"></i>
                                     </button>
                                 </div>
@@ -165,6 +158,70 @@
                         </div>
                         <div id="attachment-preview" class="mt-2 d-flex flex-wrap gap-2"></div>
                     </form>
+                    
+                    <div id="emoji-picker-container" style="position: absolute; bottom: 80px; right: 10px; display: none; width: 350px; height: 300px; z-index: 1050; background: #ffffff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow-y: auto;">
+                        <div class="emoji-grid p-2" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px;">
+                            <!-- Smileys -->
+                            <button class="emoji-btn" data-emoji="😀">😀</button>
+                            <button class="emoji-btn" data-emoji="😁">😁</button>
+                            <button class="emoji-btn" data-emoji="😂">😂</button>
+                            <button class="emoji-btn" data-emoji="🤣">🤣</button>
+                            <button class="emoji-btn" data-emoji="😃">😃</button>
+                            <button class="emoji-btn" data-emoji="😄">😄</button>
+                            <button class="emoji-btn" data-emoji="😅">😅</button>
+                            <button class="emoji-btn" data-emoji="😆">😆</button>
+                            <button class="emoji-btn" data-emoji="😉">😉</button>
+                            <button class="emoji-btn" data-emoji="😊">😊</button>
+                            <button class="emoji-btn" data-emoji="😋">😋</button>
+                            <button class="emoji-btn" data-emoji="😎">😎</button>
+                            <button class="emoji-btn" data-emoji="😍">😍</button>
+                            <button class="emoji-btn" data-emoji="😘">😘</button>
+                            <button class="emoji-btn" data-emoji="🥰">🥰</button>
+                            <button class="emoji-btn" data-emoji="😗">😗</button>
+                            <button class="emoji-btn" data-emoji="😙">😙</button>
+                            <button class="emoji-btn" data-emoji="😚">😚</button>
+
+                            <!-- Emotions -->
+                            <button class="emoji-btn" data-emoji="🙂">🙂</button>
+                            <button class="emoji-btn" data-emoji="🤗">🤗</button>
+                            <button class="emoji-btn" data-emoji="🤩">🤩</button>
+                            <button class="emoji-btn" data-emoji="🥳">🥳</button>
+                            <button class="emoji-btn" data-emoji="😢">😢</button>
+                            <button class="emoji-btn" data-emoji="😭">😭</button>
+                            <button class="emoji-btn" data-emoji="😤">😤</button>
+                            <button class="emoji-btn" data-emoji="😡">😡</button>
+                            <button class="emoji-btn" data-emoji="😱">😱</button>
+                            <button class="emoji-btn" data-emoji="😰">😰</button>
+                            <button class="emoji-btn" data-emoji="😨">😨</button>
+
+                            <!-- Hands & Gestures -->
+                            <button class="emoji-btn" data-emoji="👍">👍</button>
+                            <button class="emoji-btn" data-emoji="👎">👎</button>
+                            <button class="emoji-btn" data-emoji="👏">👏</button>
+                            <button class="emoji-btn" data-emoji="🙌">🙌</button>
+                            <button class="emoji-btn" data-emoji="👐">👐</button>
+                            <button class="emoji-btn" data-emoji="🙏">🙏</button>
+                            <button class="emoji-btn" data-emoji="✌️">✌️</button>
+                            <button class="emoji-btn" data-emoji="🤞">🤞</button>
+                            <button class="emoji-btn" data-emoji="🤟">🤟</button>
+                            <button class="emoji-btn" data-emoji="👌">👌</button>
+                            <button class="emoji-btn" data-emoji="👋">👋</button>
+
+                            <!-- Symbols -->
+                            <button class="emoji-btn" data-emoji="❤️">❤️</button>
+                            <button class="emoji-btn" data-emoji="🧡">🧡</button>
+                            <button class="emoji-btn" data-emoji="💛">💛</button>
+                            <button class="emoji-btn" data-emoji="💚">💚</button>
+                            <button class="emoji-btn" data-emoji="💙">💙</button>
+                            <button class="emoji-btn" data-emoji="💜">💜</button>
+                            <button class="emoji-btn" data-emoji="🖤">🖤</button>
+                            <button class="emoji-btn" data-emoji="💔">💔</button>
+                            <button class="emoji-btn" data-emoji="💯">💯</button>
+                            <button class="emoji-btn" data-emoji="✨">✨</button>
+                            <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                            <button class="emoji-btn" data-emoji="🌟">🌟</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,6 +234,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     max-width: 75%;
     word-wrap: break-word;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
 }
 
 .message-bubble:hover {
@@ -184,7 +242,6 @@
     box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important;
 }
 
-/* Custom scrollbar for message container */
 #message-container::-webkit-scrollbar {
     width: 6px;
 }
@@ -203,7 +260,6 @@
     background: #a8a8a8;
 }
 
-/* Animation for new messages */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -213,7 +269,6 @@
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Attachment preview items */
 .attachment-preview-item {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 8px;
@@ -221,7 +276,41 @@
     font-size: 0.8rem;
 }
 
-/* Typing indicator */
+.emoji-btn {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.emoji-btn:hover {
+    background-color: #f8f8f8;
+}
+
+.emoji-btn:focus {
+    outline: none;
+    background-color: #f0f0f0;
+}
+
+#emoji-picker-container {
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+@media (max-width: 576px) {
+    #emoji-picker-container {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
+        bottom: 70px;
+        height: 300px;
+    }
+}
+
 .typing-indicator {
     display: inline-block;
     padding: 8px 12px;
@@ -259,20 +348,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     const messageContainer = document.getElementById('message-container');
     const form = document.getElementById('message-form');
-    const textarea = form.querySelector('textarea');
+    const textarea = document.getElementById('message-input');
     const attachmentInput = document.getElementById('attachments');
     const attachmentPreview = document.getElementById('attachment-preview');
-    
-    // Auto-resize textarea as user types
+    const emojiButton = document.getElementById('emoji-button');
+    const emojiPickerContainer = document.getElementById('emoji-picker-container');
+
+    // Auto-resize textarea
     textarea.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
     });
-    
+
     // Scroll to bottom on page load
     scrollToBottom();
-    
-    // Show file preview when files are selected
+
+    // File preview
     attachmentInput.addEventListener('change', function() {
         attachmentPreview.innerHTML = '';
         if (this.files.length > 0) {
@@ -293,27 +384,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 attachmentPreview.appendChild(previewItem);
             });
-            
-            // Add event listeners to remove buttons
+
             attachmentPreview.querySelectorAll('button').forEach(button => {
                 button.addEventListener('click', function() {
                     const index = parseInt(this.getAttribute('data-index'));
                     const files = Array.from(attachmentInput.files);
                     files.splice(index, 1);
                     
-                    // Create new DataTransfer to update files
                     const dataTransfer = new DataTransfer();
                     files.forEach(file => dataTransfer.items.add(file));
                     attachmentInput.files = dataTransfer.files;
                     
-                    // Update preview
                     attachmentInput.dispatchEvent(new Event('change'));
                 });
             });
         }
     });
-    
-    // Handle form submission with AJAX
+
+    // Toggle emoji picker
+    emojiButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Close emoji picker on outside click
+    document.addEventListener('click', function(event) {
+        if (!emojiPickerContainer.contains(event.target) && !emojiButton.contains(event.target)) {
+            emojiPickerContainer.style.display = 'none';
+        }
+    });
+
+    // Insert emoji
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const emoji = this.getAttribute('data-emoji');
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            textarea.value = textBefore + emoji + textAfter;
+            textarea.selectionStart = textarea.selectionEnd = cursorPos + emoji.length;
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input')); // Trigger auto-resize
+            emojiPickerContainer.style.display = 'none';
+        });
+    });
+
+    // Form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(form);
@@ -351,8 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
         });
     });
-    
-    // Function to show alert messages
+
     function showAlert(message, type) {
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
@@ -361,17 +476,13 @@ document.addEventListener('DOMContentLoaded', function() {
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
-        
         document.body.appendChild(alert);
-        
-        // Auto-dismiss after 5 seconds
         setTimeout(() => {
             alert.classList.remove('show');
             setTimeout(() => alert.remove(), 150);
         }, 5000);
     }
-    
-    // Function to fetch new messages
+
     function fetchNewMessages() {
         const lastMessageId = messageContainer.dataset.lastMessageId || 0;
         fetch('{{ route('messages.latest', $conversation) }}?last_id=' + lastMessageId, {
@@ -419,8 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                         messageContainer.insertAdjacentHTML('beforeend', messageHtml);
                         messageContainer.dataset.lastMessageId = Math.max(messageContainer.dataset.lastMessageId, message.id);
-                        
-                        // Scroll to bottom if user is near the bottom
                         if (isNearBottom()) {
                             scrollToBottom();
                         }
@@ -430,27 +539,21 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error fetching messages:', error));
     }
-    
-    // Check if scroll position is near the bottom
+
     function isNearBottom() {
         return messageContainer.scrollTop + messageContainer.clientHeight > messageContainer.scrollHeight - 100;
     }
-    
-    // Smooth scroll to bottom
+
     function scrollToBottom() {
         messageContainer.scrollTo({
             top: messageContainer.scrollHeight,
             behavior: 'smooth'
         });
     }
-    
-    // Poll for new messages every 3 seconds
+
     setInterval(fetchNewMessages, 3000);
-    
-    // Initial fetch to catch any messages sent during page load
     fetchNewMessages();
-    
-    // Add click handler for scrolling to bottom
+
     const scrollToBottomBtn = document.createElement('button');
     scrollToBottomBtn.className = 'btn btn-primary btn-sm rounded-circle position-fixed';
     scrollToBottomBtn.style.right = '20px';
@@ -461,11 +564,9 @@ document.addEventListener('DOMContentLoaded', function() {
     scrollToBottomBtn.style.zIndex = '1000';
     scrollToBottomBtn.innerHTML = '<i class="bi bi-arrow-down"></i>';
     scrollToBottomBtn.title = 'Scroll to bottom';
-    
     scrollToBottomBtn.addEventListener('click', scrollToBottom);
     document.body.appendChild(scrollToBottomBtn);
-    
-    // Show/hide scroll to bottom button based on scroll position
+
     messageContainer.addEventListener('scroll', function() {
         scrollToBottomBtn.style.display = isNearBottom() ? 'none' : 'block';
     });
