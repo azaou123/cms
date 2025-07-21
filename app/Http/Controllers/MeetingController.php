@@ -7,7 +7,8 @@ use App\Models\Cell;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MeetingController extends Controller
 {
@@ -120,5 +121,69 @@ class MeetingController extends Controller
         $meeting->delete();
         return redirect()->route('meetings.index')
             ->with('success', 'Meeting deleted successfully.');
+    }
+
+    public function generateReport(\App\Models\Meeting $meeting)
+    {
+        // 👉 Build prompt from meeting details
+        $prompt = "Generate a concise meeting summary report in plain text. Do NOT use any Markdown formatting characters such as asterisks (*), hashtags (#), or backticks (`). The summary should be readable without any special formatting symbols. Ensure all discussion points, action items, and attendees are clearly listed in plain text. Avoid any placeholder text or assumptions.\n"
+            . "Title: {$meeting->title}\n"
+            . "Date: {$meeting->date->format('F d, Y')}\n"
+            . "Time: {$meeting->start_time} to {$meeting->end_time}\n"
+            . "Location: {$meeting->location}\n"
+            . "Description: {$meeting->description}\n"
+            . "Attendees:\n";
+
+        foreach ($meeting->attendances as $a) {
+            $prompt .= "- {$a->user->name} ({$a->status})";
+            if ($a->notes) {
+                $prompt .= " Notes: {$a->notes}";
+            }
+            $prompt .= "\n";
+        }
+
+        // 👉 Call Gemini API
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-goog-api-key' => env('GEMINI_API_KEY'),
+            ])->post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+                [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+            if (!$response->successful()) {
+                return back()->with('error', 'Gemini API error: ' . $response->body());
+            }
+
+            // 👉 Parse Gemini response
+            $json = $response->json();
+            $generatedContent = $json['candidates'][0]['content']['parts'][0]['text'] ?? 'No content generated.';
+
+            // --- NEW: Post-processing to remove any lingering Markdown ---
+            // Remove common Markdown formatting characters if they still appear
+            $generatedContent = str_replace(['**', '*', '##', '#'], '', $generatedContent);
+            $generatedContent = trim($generatedContent); // Trim any leading/trailing whitespace
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error communicating with Gemini API: ' . $e->getMessage());
+        }
+
+        // 👉 Generate PDF with the AI content
+        $pdf = Pdf::loadView('meetings.report', [
+            'meeting' => $meeting,
+            'content' => $generatedContent,
+        ]);
+
+        // 👉 Return PDF download
+        return $pdf->download('meeting-report-' . $meeting->id . '.pdf');
     }
 }

@@ -58,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('meetings/{meeting}/edit', [MeetingController::class, 'edit'])->name('meetings.edit');
     Route::put('meetings/{meeting}', [MeetingController::class, 'update'])->name('meetings.update');
     Route::delete('meetings/{meeting}', [MeetingController::class, 'destroy'])->name('meetings.destroy');
+    Route::get('/meetings/{meeting}/generate-report', [MeetingController::class, 'generateReport'])
+        ->name('meetings.generate-report');
         
     // Meeting attendance routes
     Route::post('/meetings/{meeting}/attendance', [MeetingAttendanceController::class, 'updateAttendance'])
