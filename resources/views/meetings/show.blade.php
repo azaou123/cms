@@ -5,8 +5,12 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Meeting Details') }}</div>
-
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{{ __('Meeting Details') }}</span>
+                    <a href="{{ route('meetings.generate-report', $meeting) }}" class="btn btn-success btn-sm">
+                        {{ __('Generate Report') }}
+                    </a>
+                </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <label for="title" class="col-md-4 col-form-label text-md-end">{{ __('Title') }}</label>
