@@ -19,9 +19,131 @@
                 </span>
             @endif
         </div>
-        <a href="{{ route('conversations.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back
-        </a>
+        <div>
+            <button class="btn btn-outline-secondary me-2" id="conversation-info-btn" title="Conversation Info">
+                <i class="bi bi-info-circle"></i>
+            </button>
+            <a href="{{ route('conversations.index') }}" class="btn btn-outline-secondary" title="Back to conversations">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Conversation Info Modal -->
+    <div class="modal fade" id="conversationInfoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Conversation Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if($conversation->is_group)
+                        <div class="text-center mb-3">
+                            <div class="avatar-group mb-2">
+                                @foreach($otherUsers->take(4) as $user)
+                                    <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
+                                         class="avatar" alt="{{ $user->name }}"
+                                         title="{{ $user->name }}">
+                                @endforeach
+                                @if($otherUsers->count() > 4)
+                                    <div class="avatar more-count">+{{ $otherUsers->count() - 4 }}</div>
+                                @endif
+                            </div>
+                            <h4>{{ $conversation->name }}</h4>
+                            <p class="text-muted">{{ $otherUsers->count() }} participants</p>
+                        </div>
+                    @else
+                        <div class="text-center mb-3">
+                            <img src="{{ $otherUsers->first()->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($otherUsers->first()->name) }}" 
+                                 class="avatar-lg mb-2" alt="{{ $otherUsers->first()->name }}">
+                            <h4>{{ $otherUsers->first()->name }}</h4>
+                            <p class="text-muted">{{ $otherUsers->first()->email }}</p>
+                        </div>
+                    @endif
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Media, Files and Links</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary flex-fill" id="view-media-btn">
+                                <i class="bi bi-image me-1"></i> Media
+                            </button>
+                            <button class="btn btn-outline-secondary flex-fill" id="view-files-btn">
+                                <i class="bi bi-file-earmark me-1"></i> Files
+                            </button>
+                            <button class="btn btn-outline-secondary flex-fill" id="view-links-btn">
+                                <i class="bi bi-link-45deg me-1"></i> Links
+                            </button>
+                        </div>
+                    </div>
+                    
+                    @if($conversation->is_group)
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">Group Members</h6>
+                            <div class="list-group">
+                                @foreach($otherUsers as $user)
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
+                                                 class="avatar-sm me-2" alt="{{ $user->name }}">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ $user->name }}</h6>
+                                                <small class="text-muted">{{ $user->email }}</small>
+                                            </div>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-circle-fill small"></i> Online
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <div class="d-grid gap-2">
+                        @if($conversation->is_group)
+                            <button class="btn btn-outline-danger" id="leave-group-btn">
+                                <i class="bi bi-box-arrow-right me-1"></i> Leave Group
+                            </button>
+                        @else
+                            <button class="btn btn-outline-danger" id="delete-conversation-btn">
+                                <i class="bi bi-trash me-1"></i> Delete Conversation
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Viewer Modal -->
+    <div class="modal fade" id="mediaViewerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="media-viewer-image" src="" class="img-fluid" style="max-height: 70vh;" alt="Media">
+                    <video id="media-viewer-video" controls class="img-fluid d-none" style="max-height: 70vh;"></video>
+                </div>
+                <div class="modal-footer border-0 justify-content-between">
+                    <div class="text-white" id="media-viewer-info"></div>
+                    <div>
+                        <a href="#" id="media-download-btn" class="btn btn-outline-light me-2">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        <button class="btn btn-outline-light" id="media-viewer-prev">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span class="text-white mx-2" id="media-viewer-counter">1/1</span>
+                        <button class="btn btn-outline-light" id="media-viewer-next">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card shadow-sm">
@@ -34,14 +156,34 @@
                             {{ $otherUsers->count() }} participants
                         </span>
                     @endif
+                    
+                    <div id="typing-indicator" class="typing-indicator d-none">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span id="typing-text">is typing</span>
+                    </div>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary me-2">
+                    <button class="btn btn-sm btn-outline-secondary me-2" id="search-messages-btn" title="Search messages">
                         <i class="bi bi-search"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="more-options-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="more-options-dropdown">
+                            <li><a class="dropdown-item" href="#" id="mark-as-read"><i class="bi bi-check2-all me-2"></i>Mark as read</a></li>
+                            <li><a class="dropdown-item" href="#" id="view-media"><i class="bi bi-image me-2"></i>View media</a></li>
+                            <li><a class="dropdown-item" href="#" id="view-files"><i class="bi bi-file-earmark me-2"></i>View files</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            @if($conversation->is_group)
+                                <li><a class="dropdown-item text-danger" href="#" id="leave-group"><i class="bi bi-box-arrow-right me-2"></i>Leave group</a></li>
+                            @else
+                                <li><a class="dropdown-item text-danger" href="#" id="delete-conversation"><i class="bi bi-trash me-2"></i>Delete conversation</a></li>
+                            @endif
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,7 +209,7 @@
                         
                         @foreach($messages as $message)
                             @if(!$loop->first && $message->created_at->format('Y-m-d') != $messages[$loop->index-1]->created_at->format('Y-m-d'))
-                                <div class="text-center my-3">
+                                <div class="text-center my-1">
                                     <span class="badge bg-light text-dark fw-normal">
                                         {{ $message->created_at->format('F j, Y') }}
                                     </span>
@@ -83,7 +225,11 @@
                                             <img src="{{ $message->user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($message->user->name) }}" 
                                                 alt="{{ $message->user->name }}" 
                                                 class="rounded-circle" 
-                                                style="width: 40px; height: 40px; object-fit: cover;">
+                                                style="width: 40px; height: 40px; object-fit: cover;"
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="{{ $message->user->name }}"
+                                                onclick="showUserInfo({{ $message->user->id }})">
                                         </div>
                                     @else
                                         <div class="me-2" style="width: 40px;"></div>
@@ -101,16 +247,47 @@
                                         </p>
                                     @endif
                                     
-                                    <p class="mb-1">{{ $message->body }}</p>
+                                    <p class="mb-1 message-text">{{ $message->body }}</p>
                                     
                                     @if($message->attachments->count() > 0)
                                         <div class="mt-2">
                                             @foreach($message->attachments as $attachment)
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <i class="bi bi-paperclip me-2"></i>
-                                                    <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="small {{ $message->user_id === auth()->id() ? 'text-white' : 'text-primary' }}">
-                                                        {{ $attachment->file_name }}
-                                                    </a>
+                                                @php
+                                                    $isImage = Str::startsWith($attachment->mime_type, 'image/');
+                                                    $isVideo = Str::startsWith($attachment->mime_type, 'video/');
+                                                    $fileUrl = Storage::url($attachment->file_path);
+                                                @endphp
+                                                <div class="mb-2">
+                                                    @if($isImage)
+                                                        <div class="gallery-item" data-src="{{ $fileUrl }}" data-caption="{{ $attachment->file_name }}">
+                                                            <img src="{{ $fileUrl }}" 
+                                                                 alt="{{ $attachment->file_name }}"
+                                                                 class="img-thumbnail rounded"
+                                                                 style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
+                                                        </div>
+                                                    @elseif($isVideo)
+                                                        <div class="ratio ratio-16x9">
+                                                            <video controls style="background-color: #000;">
+                                                                <source src="{{ $fileUrl }}" type="{{ $attachment->mime_type }}">
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    @else
+                                                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-file-earmark-text display-6 text-muted"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <div class="fw-bold text-truncate" style="max-width: 200px;">{{ $attachment->file_name }}</div>
+                                                                <div class="small text-muted">{{ $attachment->mime_type }} • {{ number_format($attachment->size / 1024, 1) }} KB</div>
+                                                            </div>
+                                                            <div>
+                                                                <a href="{{ $fileUrl }}" download class="btn btn-sm btn-outline-secondary">
+                                                                    <i class="bi bi-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
@@ -123,6 +300,21 @@
                                         @if($message->user_id === auth()->id())
                                             <i class="bi bi-check2-all small {{ $message->read_at ? 'text-info' : 'text-white-50' }}"></i>
                                         @endif
+                                    </div>
+                                    
+                                    <div class="message-actions d-none position-absolute" 
+                                         style="top: -10px; {{ $message->user_id === auth()->id() ? 'left: -10px' : 'right: -10px' }}">
+                                        <div class="btn-group btn-group-sm shadow">
+                                            <button class="btn btn-light" title="Reply">
+                                                <i class="bi bi-reply"></i>
+                                            </button>
+                                            <button class="btn btn-light" title="Forward">
+                                                <i class="bi bi-forward"></i>
+                                            </button>
+                                            <button class="btn btn-light" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -141,10 +333,13 @@
                                 <div class="btn-group">
                                     <label for="attachments" class="btn btn-light rounded-circle" title="Attach files">
                                         <i class="bi bi-paperclip"></i>
-                                        <input type="file" id="attachments" name="attachments[]" multiple class="d-none">
+                                        <input type="file" id="attachments" name="attachments[]" multiple class="d-none" accept="image/*, video/*, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt">
                                     </label>
                                     <button type="button" id="emoji-button" class="btn btn-light rounded-circle" title="Emoji">
                                         <i class="bi bi-emoji-smile"></i>
+                                    </button>
+                                    <button type="button" id="voice-message-btn" class="btn btn-light rounded-circle" title="Record voice message">
+                                        <i class="bi bi-mic"></i>
                                     </button>
                                 </div>
                                 <button type="submit" class="btn btn-primary rounded-circle ms-2" title="Send">
@@ -159,7 +354,39 @@
                         <div id="attachment-preview" class="mt-2 d-flex flex-wrap gap-2"></div>
                     </form>
                     
+                    <!-- Voice Message Recorder -->
+                    <div id="voice-recorder-container" class="p-3 bg-white rounded shadow-sm mt-2" style="display: none;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-danger rounded-circle me-3" id="record-button">
+                                    <i class="bi bi-mic-fill"></i>
+                                </button>
+                                <div id="recording-timer" class="text-muted">00:00</div>
+                            </div>
+                            <div id="recording-visualizer" style="height: 40px; width: 150px;"></div>
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" id="cancel-recording">
+                                    Cancel
+                                </button>
+                                <button class="btn btn-primary" id="send-recording" disabled>
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emoji Picker -->
                     <div id="emoji-picker-container" style="position: absolute; bottom: 80px; right: 10px; display: none; width: 350px; height: 300px; z-index: 1050; background: #ffffff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow-y: auto;">
+                        <div class="emoji-tabs">
+                            <button class="emoji-tab active" data-category="smileys">😀</button>
+                            <button class="emoji-tab" data-category="people">👋</button>
+                            <button class="emoji-tab" data-category="animals">🐻</button>
+                            <button class="emoji-tab" data-category="food">🍎</button>
+                            <button class="emoji-tab" data-category="activities">⚽</button>
+                            <button class="emoji-tab" data-category="objects">💡</button>
+                            <button class="emoji-tab" data-category="symbols">❤️</button>
+                            <button class="emoji-tab" data-category="flags">🏳️</button>
+                        </div>
                         <div class="emoji-grid p-2" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px;">
                             <!-- Smileys -->
                             <button class="emoji-btn" data-emoji="😀">😀</button>
@@ -180,8 +407,6 @@
                             <button class="emoji-btn" data-emoji="😗">😗</button>
                             <button class="emoji-btn" data-emoji="😙">😙</button>
                             <button class="emoji-btn" data-emoji="😚">😚</button>
-
-                            <!-- Emotions -->
                             <button class="emoji-btn" data-emoji="🙂">🙂</button>
                             <button class="emoji-btn" data-emoji="🤗">🤗</button>
                             <button class="emoji-btn" data-emoji="🤩">🤩</button>
@@ -193,7 +418,7 @@
                             <button class="emoji-btn" data-emoji="😱">😱</button>
                             <button class="emoji-btn" data-emoji="😰">😰</button>
                             <button class="emoji-btn" data-emoji="😨">😨</button>
-
+                            
                             <!-- Hands & Gestures -->
                             <button class="emoji-btn" data-emoji="👍">👍</button>
                             <button class="emoji-btn" data-emoji="👎">👎</button>
@@ -206,7 +431,7 @@
                             <button class="emoji-btn" data-emoji="🤟">🤟</button>
                             <button class="emoji-btn" data-emoji="👌">👌</button>
                             <button class="emoji-btn" data-emoji="👋">👋</button>
-
+                            
                             <!-- Symbols -->
                             <button class="emoji-btn" data-emoji="❤️">❤️</button>
                             <button class="emoji-btn" data-emoji="🧡">🧡</button>
@@ -240,6 +465,10 @@
 .message-bubble:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important;
+}
+
+.message-bubble:hover .message-actions {
+    display: block !important;
 }
 
 #message-container::-webkit-scrollbar {
@@ -295,20 +524,28 @@
     background-color: #f0f0f0;
 }
 
-#emoji-picker-container {
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    overflow: hidden;
+.emoji-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 5px;
 }
 
-@media (max-width: 576px) {
-    #emoji-picker-container {
-        width: 100%;
-        max-width: 100%;
-        right: 0;
-        bottom: 70px;
-        height: 300px;
-    }
+.emoji-tab {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.emoji-tab:hover {
+    background-color: #f0f0f0;
+}
+
+.emoji-tab.active {
+    background-color: #e0e0e0;
 }
 
 .typing-indicator {
@@ -342,6 +579,91 @@
     0%, 60%, 100% { transform: translateY(0); }
     30% { transform: translateY(-4px); }
 }
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    margin-left: -10px;
+    transition: transform 0.2s;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.avatar-sm {
+    width: 30px;
+    height: 30px;
+}
+
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+}
+
+.avatar-group {
+    display: flex;
+    justify-content: center;
+}
+
+.more-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+.gallery-item {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+    transform: scale(1.02);
+}
+
+#recording-visualizer {
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+#recording-visualizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(to right, #0d6efd, #0b5ed7);
+    animation: recordingAnimation 1s infinite alternate;
+}
+
+@keyframes recordingAnimation {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@media (max-width: 576px) {
+    #emoji-picker-container {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
+        bottom: 70px;
+        height: 300px;
+    }
+    
+    .message-bubble {
+        max-width: 85%;
+    }
+}
 </style>
 
 <script>
@@ -353,16 +675,133 @@ document.addEventListener('DOMContentLoaded', function() {
     const attachmentPreview = document.getElementById('attachment-preview');
     const emojiButton = document.getElementById('emoji-button');
     const emojiPickerContainer = document.getElementById('emoji-picker-container');
-
+    const voiceMessageBtn = document.getElementById('voice-message-btn');
+    const voiceRecorderContainer = document.getElementById('voice-recorder-container');
+    const recordButton = document.getElementById('record-button');
+    const cancelRecordingBtn = document.getElementById('cancel-recording');
+    const sendRecordingBtn = document.getElementById('send-recording');
+    const recordingTimer = document.getElementById('recording-timer');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const conversationInfoBtn = document.getElementById('conversation-info-btn');
+    const conversationInfoModal = new bootstrap.Modal(document.getElementById('conversationInfoModal'));
+    const mediaViewerModal = new bootstrap.Modal(document.getElementById('mediaViewerModal'));
+    const mediaViewerImage = document.getElementById('media-viewer-image');
+    const mediaViewerVideo = document.getElementById('media-viewer-video');
+    const mediaViewerInfo = document.getElementById('media-viewer-info');
+    const mediaDownloadBtn = document.getElementById('media-download-btn');
+    const mediaViewerPrev = document.getElementById('media-viewer-prev');
+    const mediaViewerNext = document.getElementById('media-viewer-next');
+    const mediaViewerCounter = document.getElementById('media-viewer-counter');
+    
+    let mediaItems = [];
+    let currentMediaIndex = 0;
+    let isRecording = false;
+    let mediaRecorder;
+    let audioChunks = [];
+    let timerInterval;
+    let seconds = 0;
+    let typingTimer;
+    let isTyping = false;
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
     // Auto-resize textarea
     textarea.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
+        
+        // Typing indicator
+        if (!isTyping) {
+            isTyping = true;
+            Echo.private(`conversation.{{ $conversation->id }}`)
+                .whisper('typing', {
+                    user_id: {{ auth()->id() }},
+                    name: '{{ auth()->user()->name }}'
+                });
+        }
+        
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            isTyping = false;
+        }, 2000);
     });
-
+    
+    // Listen for typing events
+    Echo.private(`conversation.{{ $conversation->id }}`)
+        .listenForWhisper('typing', (e) => {
+            if (e.user_id !== {{ auth()->id() }}) {
+                typingIndicator.classList.remove('d-none');
+                document.getElementById('typing-text').textContent = `${e.name} is typing`;
+                
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    typingIndicator.classList.add('d-none');
+                }, 2000);
+            }
+        });
+    
     // Scroll to bottom on page load
     scrollToBottom();
-
+    
+    // Initialize media items for gallery
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        mediaItems.push({
+            src: item.dataset.src,
+            caption: item.dataset.caption,
+            type: 'image'
+        });
+    });
+    
+    // Open media viewer when clicking on gallery items
+    document.querySelectorAll('.gallery-item').forEach((item, index) => {
+        item.addEventListener('click', () => {
+            const mediaSrc = item.dataset.src;
+            const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
+            
+            currentMediaIndex = index;
+            updateMediaViewer();
+            mediaViewerModal.show();
+        });
+    });
+    
+    // Media viewer navigation
+    mediaViewerPrev.addEventListener('click', () => {
+        if (currentMediaIndex > 0) {
+            currentMediaIndex--;
+            updateMediaViewer();
+        }
+    });
+    
+    mediaViewerNext.addEventListener('click', () => {
+        if (currentMediaIndex < mediaItems.length - 1) {
+            currentMediaIndex++;
+            updateMediaViewer();
+        }
+    });
+    
+    function updateMediaViewer() {
+        const media = mediaItems[currentMediaIndex];
+        
+        if (media.type === 'image') {
+            mediaViewerImage.src = media.src;
+            mediaViewerImage.classList.remove('d-none');
+            mediaViewerVideo.classList.add('d-none');
+            mediaViewerVideo.pause();
+        } else {
+            mediaViewerVideo.src = media.src;
+            mediaViewerVideo.classList.remove('d-none');
+            mediaViewerImage.classList.add('d-none');
+        }
+        
+        mediaViewerInfo.textContent = media.caption;
+        mediaDownloadBtn.href = media.src;
+        mediaViewerCounter.textContent = `${currentMediaIndex + 1}/${mediaItems.length}`;
+    }
+    
     // File preview
     attachmentInput.addEventListener('change', function() {
         attachmentPreview.innerHTML = '';
@@ -400,20 +839,29 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-
+    
     // Toggle emoji picker
     emojiButton.addEventListener('click', function(e) {
         e.stopPropagation();
         emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'block' ? 'none' : 'block';
     });
-
+    
+    // Emoji tab switching
+    document.querySelectorAll('.emoji-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            // In a real app, you would filter emojis by category here
+        });
+    });
+    
     // Close emoji picker on outside click
     document.addEventListener('click', function(event) {
-        if (!emojiPickerContainer.contains(event.target) && !emojiButton.contains(event.target)) {
+        if (!emojiPickerContainer.contains(event.target) {
             emojiPickerContainer.style.display = 'none';
         }
     });
-
+    
     // Insert emoji
     document.querySelectorAll('.emoji-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -428,7 +876,119 @@ document.addEventListener('DOMContentLoaded', function() {
             emojiPickerContainer.style.display = 'none';
         });
     });
-
+    
+    // Voice message recording
+    voiceMessageBtn.addEventListener('click', function() {
+        voiceRecorderContainer.style.display = voiceRecorderContainer.style.display === 'block' ? 'none' : 'block';
+        if (voiceRecorderContainer.style.display === 'block') {
+            initVoiceRecorder();
+        }
+    });
+    
+    function initVoiceRecorder() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = function(e) {
+                    audioChunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = function() {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Create a download link for testing
+                    const a = document.createElement('a');
+                    a.href = audioUrl;
+                    a.download = 'recording.wav';
+                    a.click();
+                    
+                    // In a real app, you would upload this to your server
+                    console.log('Recording ready to upload:', audioBlob);
+                };
+                
+                recordButton.addEventListener('click', function() {
+                    if (!isRecording) {
+                        // Start recording
+                        audioChunks = [];
+                        mediaRecorder.start();
+                        isRecording = true;
+                        recordButton.innerHTML = '<i class="bi bi-stop-fill"></i>';
+                        recordButton.classList.add('btn-danger');
+                        recordButton.classList.remove('btn-outline-danger');
+                        sendRecordingBtn.disabled = true;
+                        
+                        // Start timer
+                        seconds = 0;
+                        timerInterval = setInterval(() => {
+                            seconds++;
+                            const mins = Math.floor(seconds / 60);
+                            const secs = seconds % 60;
+                            recordingTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                            
+                            // Enable send button after 1 second
+                            if (seconds >= 1) {
+                                sendRecordingBtn.disabled = false;
+                            }
+                        }, 1000);
+                    } else {
+                        // Stop recording
+                        mediaRecorder.stop();
+                        isRecording = false;
+                        recordButton.innerHTML = '<i class="bi bi-mic-fill"></i>';
+                        recordButton.classList.remove('btn-danger');
+                        recordButton.classList.add('btn-outline-danger');
+                        clearInterval(timerInterval);
+                    }
+                });
+                
+                cancelRecordingBtn.addEventListener('click', function() {
+                    if (isRecording) {
+                        mediaRecorder.stop();
+                        isRecording = false;
+                        clearInterval(timerInterval);
+                    }
+                    voiceRecorderContainer.style.display = 'none';
+                    recordingTimer.textContent = '00:00';
+                    audioChunks = [];
+                });
+                
+                sendRecordingBtn.addEventListener('click', function() {
+                    if (audioChunks.length > 0) {
+                        // Create FormData and send to server
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'voice-message.wav');
+                        formData.append('_token', '{{ csrf_token() }}');
+                        
+                        fetch('{{ route('messages.store', $conversation) }}', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                fetchNewMessages();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error sending voice message:', error);
+                        });
+                    }
+                    
+                    voiceRecorderContainer.style.display = 'none';
+                    recordingTimer.textContent = '00:00';
+                    audioChunks = [];
+                });
+            })
+            .catch(error => {
+                console.error('Error accessing microphone:', error);
+                showAlert('Microphone access denied. Please enable microphone permissions.', 'danger');
+                voiceRecorderContainer.style.display = 'none';
+            });
+    }
+    
     // Form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -436,7 +996,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-
+        
+        // Add typing indicator to show the message is being sent
+        const typingElement = document.createElement('div');
+        typingElement.className = 'd-flex justify-content-end mb-3';
+        typingElement.innerHTML = `
+            <div class="message-bubble bg-light border p-3 rounded-3" style="max-width: 75%;">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span>Sending...</span>
+                </div>
+            </div>
+        `;
+        messageContainer.appendChild(typingElement);
+        scrollToBottom();
+        
         fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -454,20 +1030,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 attachmentInput.value = '';
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                
+                // Remove typing indicator
+                messageContainer.removeChild(typingElement);
+                
                 fetchNewMessages();
             } else {
                 showAlert('Error: ' + (data.message || 'Failed to send message'), 'danger');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                
+                // Remove typing indicator
+                messageContainer.removeChild(typingElement);
             }
         })
         .catch(error => {
             showAlert('Error: ' + error.message, 'danger');
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+            
+            // Remove typing indicator
+            messageContainer.removeChild(typingElement);
         });
     });
-
+    
+    // Show conversation info modal
+    conversationInfoBtn.addEventListener('click', function() {
+        conversationInfoModal.show();
+    });
+    
     function showAlert(message, type) {
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
@@ -482,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 150);
         }, 5000);
     }
-
+    
     function fetchNewMessages() {
         const lastMessageId = messageContainer.dataset.lastMessageId || 0;
         fetch('{{ route('messages.latest', $conversation) }}?last_id=' + lastMessageId, {
@@ -501,21 +1092,65 @@ document.addEventListener('DOMContentLoaded', function() {
                         const messageHtml = `
                             <div class="d-flex ${isCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 new-message" 
                                  data-message-id="${message.id}">
+                                ${!isCurrentUser ? `
+                                    <div class="me-2">
+                                        <img src="${message.user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.user.name)}" 
+                                            alt="${message.user.name}" 
+                                            class="rounded-circle" 
+                                            style="width: 40px; height: 40px; object-fit: cover;"
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            title="${message.user.name}">
+                                    </div>
+                                ` : ''}
                                 <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-white border'} p-3 rounded-3"
                                      style="max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                                     ${!isCurrentUser && (message.show_sender || {{ $conversation->is_group ? 'true' : 'false' }}) ? 
                                         `<p class="small fw-bold mb-1">${message.user.name}</p>` : ''}
-                                    <p class="mb-1">${message.body}</p>
+                                    <p class="mb-1 message-text">${message.body}</p>
                                     ${message.attachments.length > 0 ? `
                                         <div class="mt-2">
-                                            ${message.attachments.map(attachment => `
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <i class="bi bi-paperclip me-2"></i>
-                                                    <a href="${attachment.file_url}" target="_blank" class="small ${isCurrentUser ? 'text-white' : 'text-primary'}">
-                                                        ${attachment.file_name}
-                                                    </a>
-                                                </div>
-                                            `).join('')}
+                                            ${message.attachments.map(attachment => {
+                                                const isImage = attachment.mime_type.startsWith('image/');
+                                                const isVideo = attachment.mime_type.startsWith('video/');
+                                                
+                                                if (isImage) {
+                                                    return `
+                                                        <div class="gallery-item" data-src="${attachment.file_url}" data-caption="${attachment.file_name}">
+                                                            <img src="${attachment.file_url}" 
+                                                                 alt="${attachment.file_name}"
+                                                                 class="img-thumbnail rounded"
+                                                                 style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
+                                                        </div>
+                                                    `;
+                                                } else if (isVideo) {
+                                                    return `
+                                                        <div class="ratio ratio-16x9">
+                                                            <video controls style="background-color: #000;">
+                                                                <source src="${attachment.file_url}" type="${attachment.mime_type}">
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    `;
+                                                } else {
+                                                    return `
+                                                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-file-earmark-text display-6 text-muted"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <div class="fw-bold text-truncate" style="max-width: 200px;">${attachment.file_name}</div>
+                                                                <div class="small text-muted">${attachment.mime_type} • ${(attachment.size ? formatFileSize(attachment.size) : '')}</div>
+                                                            </div>
+                                                            <div>
+                                                                <a href="${attachment.file_url}" download class="btn btn-sm btn-outline-secondary">
+                                                                    <i class="bi bi-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                                                }
+                                            }).join('')}
                                         </div>
                                     ` : ''}
                                     <div class="d-flex justify-content-end align-items-center mt-1">
@@ -530,6 +1165,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                         messageContainer.insertAdjacentHTML('beforeend', messageHtml);
                         messageContainer.dataset.lastMessageId = Math.max(messageContainer.dataset.lastMessageId, message.id);
+                        
+                        // Reinitialize gallery items for new messages
+                        const newGalleryItems = messageContainer.querySelectorAll('.gallery-item');
+                        newGalleryItems.forEach((item, index) => {
+                            item.addEventListener('click', () => {
+                                const mediaSrc = item.dataset.src;
+                                const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
+                                
+                                // Find the index in the mediaItems array
+                                currentMediaIndex = Array.from(messageContainer.querySelectorAll('.gallery-item')).indexOf(item);
+                                updateMediaViewer();
+                                mediaViewerModal.show();
+                            });
+                        });
+                        
                         if (isNearBottom()) {
                             scrollToBottom();
                         }
@@ -539,21 +1189,30 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error fetching messages:', error));
     }
-
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+    
     function isNearBottom() {
         return messageContainer.scrollTop + messageContainer.clientHeight > messageContainer.scrollHeight - 100;
     }
-
+    
     function scrollToBottom() {
         messageContainer.scrollTo({
             top: messageContainer.scrollHeight,
             behavior: 'smooth'
         });
     }
-
+    
+    // Poll for new messages every 3 seconds
     setInterval(fetchNewMessages, 3000);
-    fetchNewMessages();
-
+    
+    // Create scroll-to-bottom button
     const scrollToBottomBtn = document.createElement('button');
     scrollToBottomBtn.className = 'btn btn-primary btn-sm rounded-circle position-fixed';
     scrollToBottomBtn.style.right = '20px';
@@ -566,10 +1225,62 @@ document.addEventListener('DOMContentLoaded', function() {
     scrollToBottomBtn.title = 'Scroll to bottom';
     scrollToBottomBtn.addEventListener('click', scrollToBottom);
     document.body.appendChild(scrollToBottomBtn);
-
+    
+    // Show/hide scroll-to-bottom button based on scroll position
     messageContainer.addEventListener('scroll', function() {
         scrollToBottomBtn.style.display = isNearBottom() ? 'none' : 'block';
     });
+    
+    // Mark messages as read when scrolling to bottom
+    messageContainer.addEventListener('scroll', function() {
+        if (isNearBottom()) {
+            markMessagesAsRead();
+        }
+    });
+    
+    function markMessagesAsRead() {
+        const unreadMessages = document.querySelectorAll('.bi-check2-all.text-white-50');
+        if (unreadMessages.length > 0) {
+            fetch('{{ route('messages.markAsRead', $conversation) }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    unreadMessages.forEach(icon => {
+                        icon.classList.remove('text-white-50');
+                        icon.classList.add('text-info');
+                    });
+                }
+            });
+        }
+    }
+    
+    // Initialize with messages marked as read if at bottom
+    if (isNearBottom()) {
+        markMessagesAsRead();
+    }
+    
+    // Link detection and formatting
+    function linkifyText(text) {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, url => {
+            return `<a href="${url}" target="_blank" class="text-decoration-none">${url}</a>`;
+        });
+    }
+    
+    // Apply link detection to existing messages
+    document.querySelectorAll('.message-text').forEach(element => {
+        element.innerHTML = linkifyText(element.textContent);
+    });
+    
+    // Apply link detection to new messages in fetchNewMessages
+    // (see the messageHtml construction where we set the message body)
 });
 </script>
 @endsection

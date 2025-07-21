@@ -94,4 +94,12 @@ class MessageController extends Controller
             })->toArray(),
         ]);
     }
+
+    public function markAsRead($id)
+    {
+        $message = Message::findOrFail($id);
+        $message->update(['read_at' => now()]);
+
+        return redirect()->back()->with('status', 'Message marked as read!');
+    }
 }
