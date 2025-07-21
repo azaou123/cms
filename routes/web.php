@@ -107,6 +107,8 @@ Route::get('/messages/{conversation}', [MessageController::class, 'pollMessages'
 Route::get('/conversations/{conversation}/messages/latest', [MessageController::class, 'latest'])->name('messages.latest');
 Route::match(['get', 'post'], '/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('messages.typing');
 Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
+Route::post('/messages/{message}/mark-as-read', [MessageController::class, 'markAsRead'])
+    ->name('messages.markAsRead');
 
 
 
