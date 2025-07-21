@@ -56,6 +56,9 @@
                         @else
                             <!-- Authenticated User Links -->
                             <li class="nav-item">
+                                <a class="nav-link" {{ request()->routeIs('users') ? 'active' : '' }}" href="{{ route('users') }}">{{ __('Users') }}</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('projects.index') || request()->routeIs('projects.create') || request()->routeIs('projects.edit') || request()->routeIs('projects.show') ? 'active' : '' }}" href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
                             </li>
                             <li class="nav-item">

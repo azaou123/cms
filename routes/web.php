@@ -82,6 +82,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+// Users
+Route::middleware(['auth'])->group(function () {
+    Route::get('/users', [App\Http\Controllers\membresController::class, 'users'])->name('users');
+});
+
+
 
 // Events
 Route::resource('events', EventController::class);
