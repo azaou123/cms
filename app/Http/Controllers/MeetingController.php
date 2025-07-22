@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Notifications\MeetingInvitation;
 
 class MeetingController extends Controller
 {
@@ -45,18 +46,23 @@ class MeetingController extends Controller
 
         $meeting = Meeting::create($validated);
 
-        // Add attendees if specified
+        // Add attendees and send notifications
         if (isset($validated['attendees'])) {
             foreach ($validated['attendees'] as $userId) {
                 $meeting->attendances()->create([
                     'user_id' => $userId,
                     'status' => 'no_response'
                 ]);
+
+                $user = User::find($userId);
+                if ($user && $user->email) {
+                    $user->notify(new MeetingInvitation($meeting));
+                }
             }
         }
 
         return redirect()->route('meetings.index')
-            ->with('success', 'Meeting scheduled successfully.');
+            ->with('success', 'Meeting scheduled and invitations sent.');
     }
 
     public function show(Meeting $meeting)
