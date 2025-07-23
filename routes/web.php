@@ -13,6 +13,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ClubSettingsController;
+use App\Http\Controllers\MembersController;
 
 Route::get('/', [HomeController::class, 'redirectToApp']);
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -84,7 +85,10 @@ Route::middleware(['auth'])->group(function () {
 
 // Users
 Route::middleware(['auth'])->group(function () {
-    Route::get('/users', [App\Http\Controllers\membresController::class, 'users'])->name('users');
+    Route::get('/users', [MembersController::class, 'index'])->name('users');
+Route::get('/users/{user}', [MembersController::class, 'show'])->name('users.show');
+Route::get('/members', [MembersController::class, 'showMembers'])->name('members.show');
+Route::get('/users/search', [MembersController::class, 'search'])->name('users.search');
 });
 
 

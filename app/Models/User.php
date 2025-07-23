@@ -60,6 +60,11 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    public function cell()
+    {
+        return $this->belongsTo(Cell::class);
+    }
+
     /**
      * The cells that the user has created.
      */
