@@ -69,28 +69,32 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <form action="{{ route('cells.members.update', [$cell, $member->id]) }}" method="POST" class="role-update-form">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="d-flex align-items-center">
-                                                        <select name="role" class="form-select form-select-sm me-2" style="width: 130px;">
-                                                            <option value="leader" {{ $member->pivot->role === 'leader' ? 'selected' : '' }}>
-                                                                Leader
-                                                            </option>
-                                                            <option value="secretary" {{ $member->pivot->role === 'secretary' ? 'selected' : '' }}>
-                                                                Secretary
-                                                            </option>
-                                                            <option value="member" {{ $member->pivot->role === 'member' ? 'selected' : '' }}>
-                                                                Member
-                                                            </option>
-                                                        </select>
-                                                        <button type="submit"  class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
-                                                            <i class="bi bi-check-lg"></i>
-                                                            <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true" style="display:none;"></span>
-                                                        </button>
+                                                @if(Auth::user()->isJustMemberInCell())
+                                                    <span class="badge bg-secondary">{{ $member->pivot->role }}</span>
+                                                @else
+                                                    <form action="{{ route('cells.members.update', [$cell, $member->id]) }}" method="POST" class="role-update-form">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <div class="d-flex align-items-center">
+                                                            <select name="role" class="form-select form-select-sm me-2" style="width: 130px;">
+                                                                <option value="leader" {{ $member->pivot->role === 'leader' ? 'selected' : '' }}>
+                                                                    Leader
+                                                                </option>
+                                                                <option value="secretary" {{ $member->pivot->role === 'secretary' ? 'selected' : '' }}>
+                                                                    Secretary
+                                                                </option>
+                                                                <option value="member" {{ $member->pivot->role === 'member' ? 'selected' : '' }}>
+                                                                    Member
+                                                                </option>
+                                                            </select>
+                                                            <button type="submit"  class="btn btn-sm btn-outline-success" title="{{ __('Update Role') }}">
+                                                                <i class="bi bi-check-lg"></i>
+                                                                <span class="spinner-border spinner-border-sm " role="status" aria-hidden="true" style="display:none;"></span>
+                                                            </button>
 
-                                                    </div>
-                                                </form>
+                                                        </div>
+                                                    </form>
+                                                @endif
                                             </td>
                                             <td>
                                                 <span class="badge bg-{{ $member->isOnline() ? 'success' : 'secondary' }} d-flex align-items-center" style="width: fit-content;">
@@ -99,25 +103,32 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group">
-                                                    <!-- Chat Button -->
-                                                    <form action="{{ route('conversations.start-with-user') }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <input type="hidden" name="user_id" value="{{ $member->id }}">
-                                                        <button type="submit" class="btn btn-sm btn-info" title="{{ __('Start Chat') }}">
+                                                @if (Auth::user()->isJustMemberInCell())
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm btn-info" title="{{ __('Start Chat') }}">
                                                             <i class="bi bi-chat-dots"></i>
                                                         </button>
-                                                    </form>
-
-                                                    <!-- Remove Button -->
-                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn"
-                                                            title="{{ __('Remove Member') }}"
-                                                            data-member-id="{{ $member->id }}"
-                                                            data-member-name="{{ $member->name }}"
-                                                            data-remove-url="{{ route('cells.members.remove', [$cell, $member->id]) }}">
-                                                        <i class="bi bi-person-dash"></i>
-                                                    </button>
-                                                </div>
+                                                    </div>
+                                                @else
+                                                    <div class="btn-group" role="group">
+                                                        <!-- Chat Button -->
+                                                        <form action="{{ route('conversations.start-with-user') }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <input type="hidden" name="user_id" value="{{ $member->id }}">
+                                                            <button type="submit" class="btn btn-sm btn-info" title="{{ __('Start Chat') }}">
+                                                                <i class="bi bi-chat-dots"></i>
+                                                            </button>
+                                                        </form>
+                                                        <!-- Remove Button -->
+                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn"
+                                                                title="{{ __('Remove Member') }}"
+                                                                data-member-id="{{ $member->id }}"
+                                                                data-member-name="{{ $member->name }}"
+                                                                data-remove-url="{{ route('cells.members.remove', [$cell, $member->id]) }}">
+                                                            <i class="bi bi-person-dash"></i>
+                                                        </button>
+                                                    </div>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach
@@ -141,53 +152,62 @@
                                         <i class="bi bi-person-plus me-2"></i>{{ __('Add New Member') }}
                                     </h6>
                                 </div>
-                                <div class="card-body">
-                                    @if (count($users) > 0)
-                                    <form action="{{ route('cells.members.add', $cell) }}" method="POST" id="addMemberForm">
-                                        @csrf
-                                        <div class="mb-3">
-                                            <label for="user_search" class="form-label">{{ __('Search User') }}</label>
-                                            <div class="position-relative">
-                                                <input type="text" id="user_search" class="form-control" placeholder="{{ __('Type to search users...') }}" autocomplete="off">
-                                                <div class="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-sm" id="user_dropdown" style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto;">
-                                                    <!-- Search results will be populated here -->
-                                                </div>
-                                            </div>
-                                            <input type="hidden" id="user_id" name="user_id" class="@error('user_id') is-invalid @enderror" required>
-                                            @error('user_id')
-                                            <span class="invalid-feedback d-block" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                            @enderror
+                                @if(Auth::user()->isJustMemberInCell())
+                                    <div class="card-body">
+                                        <div class="alert alert-warning text-center mb-0">
+                                            <i class="bi bi-lock-fill me-2"></i>
+                                            {{ __('You do not have access to manage members in this cell.') }}
                                         </div>
-
-                                        <div class="mb-3">
-                                            <label for="role" class="form-label">{{ __('Assign Role') }}</label>
-                                            <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
-                                                <option value="leader">Leader</option>
-                                                <option value="secretary">Secretary</option>
-                                                <option value="member" selected>Member</option>
-                                            </select>
-                                            @error('role')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                            @enderror
-                                        </div>
-
-                                        <div class="d-grid">
-                                            <button type="submit" class="btn btn-success" id="addMemberBtn" disabled>
-                                                <i class="bi bi-person-plus-fill me-2"></i>{{ __('Add Member') }}
-                                            </button>
-                                        </div>
-                                    </form>
-                                    @else
-                                    <div class="text-center py-4">
-                                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                                        <p class="text-muted mt-2 mb-0">{{ __('All users are already members of this cell.') }}</p>
                                     </div>
-                                    @endif
-                                </div>
+                                @else
+                                    <div class="card-body">
+                                        @if (count($users) > 0)
+                                        <form action="{{ route('cells.members.add', $cell) }}" method="POST" id="addMemberForm">
+                                            @csrf
+                                            <div class="mb-3">
+                                                <label for="user_search" class="form-label">{{ __('Search User') }}</label>
+                                                <div class="position-relative">
+                                                    <input type="text" id="user_search" class="form-control" placeholder="{{ __('Type to search users...') }}" autocomplete="off">
+                                                    <div class="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-sm" id="user_dropdown" style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto;">
+                                                        <!-- Search results will be populated here -->
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="user_id" name="user_id" class="@error('user_id') is-invalid @enderror" required>
+                                                @error('user_id')
+                                                <span class="invalid-feedback d-block" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                                @enderror
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="role" class="form-label">{{ __('Assign Role') }}</label>
+                                                <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
+                                                    <option value="leader">Leader</option>
+                                                    <option value="secretary">Secretary</option>
+                                                    <option value="member" selected>Member</option>
+                                                </select>
+                                                @error('role')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                                @enderror
+                                            </div>
+
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-success" id="addMemberBtn" disabled>
+                                                    <i class="bi bi-person-plus-fill me-2"></i>{{ __('Add Member') }}
+                                                </button>
+                                            </div>
+                                        </form>
+                                        @else
+                                        <div class="text-center py-4">
+                                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mt-2 mb-0">{{ __('All users are already members of this cell.') }}</p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Member Statistics -->

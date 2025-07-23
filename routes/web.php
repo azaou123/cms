@@ -14,10 +14,29 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ClubSettingsController;
 use App\Http\Controllers\MembersController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest
+use Illuminate\Http\Request;
 
 // Redirect and Home
 Route::get('/', [HomeController::class, 'redirectToApp']);
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+
+
+// Email Verification Routes
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // Auth routes
 Auth::routes();

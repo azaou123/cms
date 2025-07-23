@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -36,5 +37,19 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    protected function authenticated($request, $user)
+    {
+        if (!$user->hasVerifiedEmail()) {
+            Auth::logout();
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'Please verify your email before logging in. 
+                    <a href="' . route('verification.send') . '"
+                    onclick="event.preventDefault(); document.getElementById(\'resend-verification-form\').submit();"
+                    class="alert-link">Resend verification email</a>.',
+            ]);
+        }
     }
 }
