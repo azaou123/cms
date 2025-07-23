@@ -30,7 +30,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0">
                                     <i class="bi bi-people me-2"></i>{{ __('Current Members') }}
-                                    <span class="badge bg-primary ms-2">{{ count($members) }}</span>
+                                    <span class="badge bg-primary ms-2">{{ count($nbr_members) }}</span>
                                 </h5>
                                 <!-- Search Filter -->
                                 <div class="d-flex align-items-center">
@@ -220,15 +220,15 @@
                                 <div class="card-body">
                                     <div class="row text-center">
                                         <div class="col-4">
-                                            <div class="fw-bold text-primary">{{ $members->where('pivot.role', 'leader')->count() }}</div>
+                                            <div id="nbr_leader" class="fw-bold text-primary">{{ $members->where('pivot.role', 'leader')->count() }}</div>
                                             <small class="text-muted">Leaders</small>
                                         </div>
                                         <div class="col-4">
-                                            <div class="fw-bold text-warning">{{ $members->where('pivot.role', 'secretary')->count() }}</div>
+                                            <div id="nbr_secretary" class="fw-bold text-warning">{{ $members->where('pivot.role', 'secretary')->count() }}</div>
                                             <small class="text-muted">Secretaries</small>
                                         </div>
                                         <div class="col-4">
-                                            <div class="fw-bold text-success">{{ $members->where('pivot.role', 'member')->count() }}</div>
+                                            <div id="nbr_member" class="fw-bold text-success">{{ $members->where('pivot.role', 'member')->count() }}</div>
                                             <small class="text-muted">Members</small>
                                         </div>
                                     </div>
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // User data for search
     const users = @json($users ?? []);
 
-    
+
 
     // Custom Alert Functions
     window.showCustomAlert = function(title, message, confirmCallback) {
@@ -458,7 +458,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.role-update-form select').forEach(select => {
         const originalValue = select.value;
 
+
         select.addEventListener('change', function() {
+
             const form = this.closest('.role-update-form');
             const memberName = form.closest('tr').querySelector('.member-name').textContent;
             const newRole = this.value;
@@ -491,6 +493,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         updateBtn.classList.add('pulse');
                         showToast('Role changed! Click the save button to confirm.');
+                        updatestatics();
+                        selectElement.setAttribute('data-original-value', this.value);
+
                     } else {
                         selectRole.value = originalRole;
                         afficherMessage('danger', data.message || 'Erreur lors de la mise à jour');
@@ -518,6 +523,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
             alertOverlay.addEventListener('click', handleOverlayClick);
+            function updatestatics(){
+                const nbr_leader=document.getElementById('nbr_leader');
+                const nbr_secretary=document.getElementById('nbr_secretary');
+                const nbr_member=document.getElementById('nbr_member');
+
+                switch (originalValue) {
+                    case 'leader':{
+                        nbr_leader.textContent=Number(nbr_leader.textContent)-1;
+                        if(selectElement.value =='member'){
+                            nbr_member.textContent=Number(nbr_member.textContent)+1;
+                        }else{
+                            nbr_secretary.textContent=Number(nbr_secretary.textContent)+1;
+                        }
+                    }break;
+                    case 'member':{
+                        nbr_member.textContent=Number(nbr_member.textContent)-1;
+                        if(selectElement.value =='leader'){
+                            nbr_leader.textContent=Number(nbr_leader.textContent)+1;
+                        }else{
+                            nbr_secretary.textContent=Number(nbr_secretary.textContent)+1;
+                        }
+                    }break;
+                    case 'secretary':{
+                        nbr_secretary.textContent=Number(nbr_secretary.textContent)-1;
+                        if(selectElement.value =='member'){
+                            nbr_member.textContent=Number(nbr_member.textContent)+1;
+                        }else{
+                            nbr_leader.textContent=Number(nbr_leader.textContent)+1;
+                        }
+                    }break;
+                    default:
+                        break;
+                }
+
+
+            }
+
         });
     });
 
@@ -535,6 +577,8 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Adding...';
         btn.disabled = true;
     });
+
+
 
     // Show session messages
     @if (session('success'))
