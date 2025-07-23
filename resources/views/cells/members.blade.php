@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // User data for search
     const users = @json($users ?? []);
 
+    
+
     // Custom Alert Functions
     window.showCustomAlert = function(title, message, confirmCallback) {
         document.getElementById('alertTitle').textContent = title;

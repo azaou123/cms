@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use App\Models\Cell;
+use App\Models\project;
 
 
 class ProfileController extends Controller
@@ -63,7 +65,7 @@ class ProfileController extends Controller
             if ($user->profile_picture) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-            
+
             $profilePicturePath = $request->file('profile_picture')->store('profile-pictures', 'public');
             $user->profile_picture = $profilePicturePath;
         }
@@ -75,4 +77,65 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.show')->with('status', 'Profile updated successfully!');
     }
+
+
+    public function showsmembres(){
+        $members=User::paginate(7);
+        $cells = Cell::all();
+        $projects=Project::all();
+        $rols=User::select();
+
+        return view('members/show_members',compact('members','rols','projects','cells',));
+    }
+
+
+    public function filtermembres(Request $request){
+
+
+
+    $id_cell = $request->cell;
+    $id_project = $request->project;
+    $roll = $request->roll;
+
+    // More efficient approach using query builder
+    $query = User::query();
+
+    // Filter by cell if provided
+    if ($id_cell) {
+        $query->whereHas('cells', function($q) use ($id_cell) {
+            $q->where('cells.id', $id_cell);
+        });
+    }
+
+    // Filter by project if provided
+    if ($id_project) {
+        $query->whereHas('projects', function($q) use ($id_project) {
+            $q->where('projects.id', $id_project);
+        });
+    }
+
+   // Filter by role if provided (assuming role is stored in pivot table)
+    if ($roll) {
+        $query->whereHas('cells', function($q) use ($roll) {
+            $q->where('cell_user.role', $roll);
+        });
+    }
+
+    $members = $query->paginate(7);
+    //dd($members);
+
+
+    // Get all data needed for the view
+    $cells = Cell::all();
+    $projects = Project::all();
+    $rols=User::select();
+    // $roles = User::distinct()->pluck('role'); // Or however you store roles
+
+    return view('members/show_members', compact('members', 'rols', 'projects', 'cells'));
+}
+
+
+
+
+
 }
