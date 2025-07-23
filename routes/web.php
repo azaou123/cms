@@ -28,6 +28,12 @@ Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')
 Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+// membres routes
+
+Route::get('/members/show_members',[ProfileController::class, 'showsmembres'])->name('shows_membres');
+Route::post('/members/show_members',[ProfileController::class, 'filtermembres'])->name('filter_membres');
+
+
 // Cell routes
 Route::resource('cells', CellController::class);
 Route::get('/cells/{cell}/members', [CellController::class, 'manageMembers'])->name('cells.members');
@@ -58,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('meetings/{meeting}/edit', [MeetingController::class, 'edit'])->name('meetings.edit');
     Route::put('meetings/{meeting}', [MeetingController::class, 'update'])->name('meetings.update');
     Route::delete('meetings/{meeting}', [MeetingController::class, 'destroy'])->name('meetings.destroy');
-        
+
     // Meeting attendance routes
     Route::post('/meetings/{meeting}/attendance', [MeetingAttendanceController::class, 'updateAttendance'])
         ->name('meetings.update-attendance');
@@ -104,23 +110,23 @@ Route::post('conversations/{conversation}/messages', [MessageController::class, 
 
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [ClubSettingsController::class, 'index'])->name('index');
-    
+
     // General Settings
     Route::get('/general', [ClubSettingsController::class, 'showGeneralSettings'])->name('general');
     Route::post('/general', [ClubSettingsController::class, 'updateGeneralSettings'])->name('general.update');
-    
+
     // Social Media Settings
     Route::get('/social-media', [ClubSettingsController::class, 'showSocialMediaSettings'])->name('social-media');
     Route::post('/social-media', [ClubSettingsController::class, 'updateSocialMediaSettings'])->name('social-media.update');
-    
+
     // System Settings
     Route::get('/system', [ClubSettingsController::class, 'showSystemSettings'])->name('system');
     Route::post('/system', [ClubSettingsController::class, 'updateSystemSettings'])->name('system.update');
-    
+
     // Appearance Settings
     Route::get('/appearance', [ClubSettingsController::class, 'showAppearanceSettings'])->name('appearance');
     Route::post('/appearance', [ClubSettingsController::class, 'updateAppearanceSettings'])->name('appearance.update');
-    
+
     // Notification Settings
     Route::get('/notifications', [ClubSettingsController::class, 'showNotificationSettings'])->name('notifications');
     Route::post('/notifications', [ClubSettingsController::class, 'updateNotificationSettings'])->name('notifications.update');
