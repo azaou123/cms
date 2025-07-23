@@ -8,15 +8,16 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+    * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -144,5 +145,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Event::class, 'event_registrations')
             ->withPivot('registration_date', 'status')
             ->withTimestamps();
+    }
+
+    public function isJustMemberInCell()
+    {
+        return $this->cells()->wherePivot('role', 'member')->exists() && !$this->projects()->exists();
     }
 }

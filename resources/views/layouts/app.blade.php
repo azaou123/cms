@@ -54,24 +54,45 @@
                                 </li>
                             @endif
                         @else
-                            <!-- Authenticated User Links -->
-                            <li class="nav-item">
-                                <a class="nav-link" {{ request()->routeIs('users') ? 'active' : '' }}" href="{{ route('users') }}">{{ __('Users') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('projects.index') || request()->routeIs('projects.create') || request()->routeIs('projects.edit') || request()->routeIs('projects.show') ? 'active' : '' }}" href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('cells.index') || request()->routeIs('cells.create') || request()->routeIs('cells.members') || request()->routeIs('cells.edit') || request()->routeIs('cells.show') ? 'active' : '' }}" href="{{ route('cells.index') }}">{{ __('Cells') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('meetings.index') || request()->routeIs('meetings.create') || request()->routeIs('meetings.edit') || request()->routeIs('meetings.show') ? 'active' : '' }}" href="{{ route('meetings.index') }}">{{ __('Meetings') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('events.index') || request()->routeIs('events.create') || request()->routeIs('events.edit') || request()->routeIs('events.show') ? 'active' : '' }}" href="{{ route('events.index') }}">{{ __('Events') }}</a>
-                            </li>
+                            @php
+                                // call the helper
+                                $justMemberInCell = Auth::user()->isJustMemberInCell();
+                            @endphp
+
+                            @if($justMemberInCell)
+                                {{-- ✅ For users that are just members in some cell and not in any project --}}
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('cells.*') ? 'active' : '' }}" href="{{ route('cells.index') }}">{{ __('Cells') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}" href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('meetings.*') ? 'active' : '' }}" href="{{ route('meetings.index') }}">{{ __('Meetings') }}</a>
+                                </li>
+                            @else
+                                {{-- ✅ Normal full navbar for other users --}}
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('users') ? 'active' : '' }}" href="{{ route('users') }}">{{ __('Users') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}" href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('cells.*') ? 'active' : '' }}" href="{{ route('cells.index') }}">{{ __('Cells') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('meetings.*') ? 'active' : '' }}" href="{{ route('meetings.index') }}">{{ __('Meetings') }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">{{ __('Events') }}</a>
+                                </li>
+                            @endif
+
+                            {{-- Dropdown for user --}}
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }}
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -82,11 +103,9 @@
                                         {{ __('My Profile') }}
                                     </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
-                                        onclick="event.preventDefault();
-                                                document.getElementById('logout-form').submit();">
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
-
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>

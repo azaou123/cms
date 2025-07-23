@@ -18,9 +18,22 @@
                                 <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
 
                                 @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
+                                    @if (str_contains($message, 'verify your email'))
+                                        <div class="alert alert-warning d-flex align-items-center mt-2" role="alert">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <div>
+                                                {!! $message !!}
+                                            </div>
+                                        </div>
+
+                                        <form id="resend-verification-form" method="POST" action="{{ route('verification.send') }}" class="d-none">
+                                            @csrf
+                                        </form>
+                                    @else
+                                        <span class="invalid-feedback d-block" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @endif
                                 @enderror
                             </div>
                         </div>
