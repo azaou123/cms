@@ -110,10 +110,11 @@ class CellController extends Controller
      */
     public function manageMembers(Cell $cell)
     {
+        $nbr_members=$cell->members()->get();
         $members = $cell->members()->paginate(7);
         $users = \App\Models\User::whereNotIn('id', $members->pluck('id'))->get();
 
-        return view('cells.members', compact('cell', 'members', 'users'));
+        return view('cells.members', compact('cell', 'members', 'users','nbr_members'));
     }
 
     /**
