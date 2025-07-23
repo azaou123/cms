@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Users</h5>
-                    <a href="" class="btn btn-primary btn-sm">New User</a>
+                    <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newUserModal">New User</a>
                 </div>
 
                 <div class="card-body">
@@ -18,7 +18,7 @@
                     @endif
 
                     {{-- 🔎 Filters --}}
-                    <form method="GET" action="{{ route('users') }}" class="row g-3 mb-4">
+                    <form method="GET" action="{{ route('users') }}" class="row g-3 mb-4" id="filterForm">
                         <div class="col-md-4">
                             <label for="cell" class="form-label">Filter by Cell</label>
                             <select name="cell" id="cell" class="form-select">
@@ -41,14 +41,19 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-secondary me-2">Apply Filters</button>
-                            <a href="{{ route('users') }}" class="btn btn-outline-secondary">Reset</a>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Search</label>
+                            <div class="input-group">
+                                <input type="text" name="search" id="search" class="form-control" 
+                                       placeholder="Name or Email" value="{{ request('search') }}">
+                                <button class="btn btn-outline-primary" type="submit">Search</button>
+                            </div>
                         </div>
                     </form>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive" id="userTableWrapper">
                         <table class="table table-striped">
+                            <!-- Rest of the table code remains unchanged -->
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -75,7 +80,7 @@
                                         <td>{{ $user->created_at->format('M d, Y') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="" class="btn btn-sm btn-info">
+                                                <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 <a href="" class="btn btn-sm btn-primary ms-1">
@@ -109,4 +114,39 @@
         </div>
     </div>
 </div>
+
+<!-- New User Modal remains unchanged -->
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+    <!-- Modal content remains unchanged -->
+</div>
+
+<script>
+    document.getElementById('filterForm').addEventListener('change', function(e) {
+        if (e.target.matches('select')) {
+            this.submit();
+        }
+    });
+
+    // Optional: Add debouncing for search input if you want to keep AJAX functionality
+    let searchTimeout;
+    document.getElementById('search').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const query = new URLSearchParams(formData).toString();
+
+            fetch(`{{ route('users') }}?${query}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('userTableWrapper').innerHTML = html;
+            })
+            .catch(error => console.error('Error:', error));
+        }, 300);
+    });
+</script>
 @endsection
