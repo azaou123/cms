@@ -58,11 +58,11 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         $profilePicturePath = null;
-        
+
         if (isset($data['profile_picture']) && $data['profile_picture']) {
             $profilePicturePath = $data['profile_picture']->store('profile-pictures', 'public');
         }
-        
+
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -74,4 +74,6 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
     }
+
+    
 }

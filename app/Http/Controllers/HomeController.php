@@ -16,6 +16,7 @@ class HomeController extends Controller
     public function redirectToApp()
     {
         if (Auth::check()) {
+            $user = Auth::user();
             return redirect()->route('home');
         }
         $settings = ClubSetting::first();

@@ -17,7 +17,7 @@
                             <div class="col-md-6">
                                 <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
 
-                                @error('email')
+                                {{-- @error('email')
                                     @if (str_contains($message, 'verify your email'))
                                         <div class="alert alert-warning d-flex align-items-center mt-2" role="alert">
                                             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -34,7 +34,48 @@
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @endif
+                                @enderror --}}
+                                @error('email')
+                                    @if (str_contains($message, 'verify your email'))
+                                        <div class="alert alert-warning d-flex align-items-center mt-2" role="alert">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <div>
+                                                <p class="mb-2">{!! $message !!}</p>
+
+                                                <!-- Bouton qui déclenche le JavaScript -->
+                                                <button type="button" class="btn btn-sm btn-warning" onclick="resendVerification()">
+                                                    <i class="fas fa-envelope me-1"></i>
+                                                    Resend verification email
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Formulaire caché avec l'ID correct -->
+                                        <form id="resend-verification-form" method="POST" action="{{ route('verification.send') }}" style="display: none;">
+                                            @csrf
+                                        </form>
+
+                                        <script>
+                                        function resendVerification() {
+                                            // Vérifier que l'élément existe avant de le soumettre
+                                            const form = document.getElementById('resend-verification-form');
+                                            if (form) {
+                                                if (confirm('Voulez-vous recevoir un nouvel email de vérification ?')) {
+                                                    form.submit();
+                                                }
+                                            } else {
+                                                console.error('Formulaire de renvoi non trouvé');
+                                                alert('Erreur technique. Rechargez la page.');
+                                            }
+                                        }
+                                        </script>
+                                    @else
+                                        <span class="invalid-feedback d-block" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @endif
                                 @enderror
+
                             </div>
                         </div>
 
