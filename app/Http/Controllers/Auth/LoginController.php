@@ -45,11 +45,20 @@ class LoginController extends Controller
             Auth::logout();
 
             return redirect()->route('login')->withErrors([
-                'email' => 'Please verify your email before logging in. 
-                    <a href="' . route('verification.send') . '"
+                'email' => 'Please verify your email before logging in.
+                    <a href="' . route('verification.resend') . '"
                     onclick="event.preventDefault(); document.getElementById(\'resend-verification-form\').submit();"
                     class="alert-link">Resend verification email</a>.',
             ]);
         }
     }
+    // protected function authenticated($request, $user)
+    // {
+    //     if (!$user->hasVerifiedEmail()) {
+    //         Auth::logout();
+    //         return redirect()->route('verification.notice')
+    //             ->with('email', $user->email);
+    //     }
+    //     return redirect()->intended($this->redirectPath());
+    // }
 }
