@@ -28,7 +28,8 @@
                                 @if($conversation->is_group)
                                     {{ $conversation->name }}
                                 @else
-                                    {{ $conversation->users->where('id', '!=', auth()->id())->first()->name }}
+                                    {{-- {{ $conversation->users->where('id', '!=', auth()->id())->first()->name }} --}}
+                                    {{ $conversation->name }}
                                 @endif
                             </h5>
                             <p class="mb-1 text-muted">{{ $conversation->lastMessage?->body ?? 'No messages yet' }}</p>

@@ -27,6 +27,8 @@ class ConversationController extends Controller
         ]);
 
         $userId = $request->user_id;
+        $user=User::where('id',$userId)->first();
+
 
         // Check if a conversation already exists between these users
         $existingConversation = Auth::user()->conversations()
@@ -35,7 +37,7 @@ class ConversationController extends Controller
             })
             ->whereHas('users', function ($query) {
                 $query->where('users.id', Auth::id());
-            }) 
+            })
             ->where('is_group', false)
             ->first();
 
@@ -47,6 +49,7 @@ class ConversationController extends Controller
         // Create a new conversation
         $conversation = Conversation::create([
             'is_group' => false,
+            'name' => $user->name,
         ]);
 
         // Attach both users
@@ -118,6 +121,7 @@ class ConversationController extends Controller
         // Update last read timestamp
         $conversation->users()->updateExistingPivot(Auth::id(), [
             'last_read_at' => now(),
+            'unread' => false,
         ]);
 
         $messages = $conversation->messages()->with('user', 'attachments')->orderBy('created_at', 'asc')->get();

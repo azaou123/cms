@@ -51,7 +51,7 @@
                                         </div>
 
                                         <!-- Formulaire caché avec l'ID correct -->
-                                        <form id="resend-verification-form" method="POST" action="{{ route('verification.send') }}" style="display: none;">
+                                        <form id="resend-verification-form" method="POST" action="{{ route('verification.resend') }}" style="display: none;">
                                             @csrf
                                         </form>
 

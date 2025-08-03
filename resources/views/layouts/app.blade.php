@@ -19,7 +19,30 @@
 
     <!-- Vite Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <style>
+      .icon-notification {
+      position: relative;
+      display: inline-block;
+      font-size: 32px;
+    }
+
+    .icon-notification .badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background-color: red;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 1;
+      min-width: 18px;
+      text-align: center;
+    }
+    </style>
 </head>
+
 <body>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div id="app">
@@ -88,6 +111,19 @@
                                     <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">{{ __('Events') }}</a>
                                 </li>
                             @endif
+                            @php
+                                $unreadConversation = Auth::user()->unreadConversations()->count();
+                            @endphp
+
+                            <li class="nav-item">
+                                <a class="text-dark fs-4 me-0 icon-notification" href="{{ route('conversations.index') }}">
+                                    <i class="bi bi-chat-dots"></i>
+                                    @if ($unreadConversation)
+                                        <span class="badge">{{ $unreadConversation }}</span>
+                                    @endif
+                                </a>
+                            </li>
+
 
                             {{-- Dropdown for user --}}
                             <li class="nav-item dropdown">
@@ -111,6 +147,7 @@
                                     </form>
                                 </div>
                             </li>
+
                         @endguest
                     </ul>
                 </div>
@@ -122,7 +159,7 @@
             @yield('scripts')
         </main>
     </div>
-    
+
     <!-- jQuery (necessary for Select2) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
