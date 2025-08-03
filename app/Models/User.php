@@ -118,6 +118,13 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot('last_read_at')
             ->withTimestamps();
     }
+    public function unreadConversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_user')
+            ->withPivot('last_read_at', 'unread')
+            ->withTimestamps()
+            ->wherePivot('unread', true);
+    }
 
 
     public function messages(): HasMany

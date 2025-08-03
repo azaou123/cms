@@ -42,7 +42,7 @@
                         <div class="text-center mb-3">
                             <div class="avatar-group mb-2">
                                 @foreach($otherUsers->take(4) as $user)
-                                    <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
+                                    <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}"
                                          class="avatar" alt="{{ $user->name }}"
                                          title="{{ $user->name }}">
                                 @endforeach
@@ -55,13 +55,13 @@
                         </div>
                     @else
                         <div class="text-center mb-3">
-                            <img src="{{ $otherUsers->first()->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($otherUsers->first()->name) }}" 
+                            <img src="{{ $otherUsers->first()->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($otherUsers->first()->name) }}"
                                  class="avatar-lg mb-2" alt="{{ $otherUsers->first()->name }}">
                             <h4>{{ $otherUsers->first()->name }}</h4>
                             <p class="text-muted">{{ $otherUsers->first()->email }}</p>
                         </div>
                     @endif
-                    
+
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Media, Files and Links</h6>
                         <div class="d-flex gap-2">
@@ -76,7 +76,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     @if($conversation->is_group)
                         <div class="mb-3">
                             <h6 class="text-muted mb-2">Group Members</h6>
@@ -84,7 +84,7 @@
                                 @foreach($otherUsers as $user)
                                     <div class="list-group-item list-group-item-action">
                                         <div class="d-flex align-items-center">
-                                            <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
+                                            <img src="{{ $user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}"
                                                  class="avatar-sm me-2" alt="{{ $user->name }}">
                                             <div class="flex-grow-1">
                                                 <h6 class="mb-0">{{ $user->name }}</h6>
@@ -99,7 +99,7 @@
                             </div>
                         </div>
                     @endif
-                    
+
                     <div class="d-grid gap-2">
                         @if($conversation->is_group)
                             <button class="btn btn-outline-danger" id="leave-group-btn">
@@ -152,11 +152,11 @@
                 <div>
                     @if($conversation->is_group && $otherUsers->count() > 1)
                         <span class="text-muted small">
-                            <i class="bi bi-people me-1"></i> 
+                            <i class="bi bi-people me-1"></i>
                             {{ $otherUsers->count() }} participants
                         </span>
                     @endif
-                    
+
                     <div id="typing-indicator" class="typing-indicator d-none">
                         <span></span>
                         <span></span>
@@ -187,13 +187,13 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="card-body p-0">
             <div class="d-flex flex-column" style="height: 65vh;">
-                <div class="flex-grow-1 overflow-auto p-4" id="message-container" 
+                <div class="flex-grow-1 overflow-auto p-4" id="message-container"
                      style="background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);"
                      data-last-message-id="{{ $messages->max('id') ?? 0 }}">
-                    
+
                     @if($messages->isEmpty())
                         <div class="text-center text-muted py-5">
                             <i class="bi bi-chat-square-text display-6 mb-3"></i>
@@ -206,7 +206,7 @@
                                 {{ $messages->first()->created_at->format('F j, Y') }}
                             </span>
                         </div>
-                        
+
                         @foreach($messages as $message)
                             @if(!$loop->first && $message->created_at->format('Y-m-d') != $messages[$loop->index-1]->created_at->format('Y-m-d'))
                                 <div class="text-center my-1">
@@ -215,19 +215,19 @@
                                     </span>
                                 </div>
                             @endif
-                            
-                            <div class="d-flex {{ $message->user_id === auth()->id() ? 'justify-content-end' : 'justify-content-start' }} mb-3" 
+
+                            <div class="d-flex {{ $message->user_id === auth()->id() ? 'justify-content-end' : 'justify-content-start' }} mb-3"
                                 data-message-id="{{ $message->id }}">
-                                
+
                                 @if($message->user_id !== auth()->id())
                                     @if($loop->first || $message->user_id !== $messages[$loop->index - 1]->user_id)
                                         <div class="me-2">
-                                            <img src="{{ $message->user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($message->user->name) }}" 
-                                                alt="{{ $message->user->name }}" 
-                                                class="rounded-circle" 
+                                            <img src="{{ $message->user->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($message->user->name) }}"
+                                                alt="{{ $message->user->name }}"
+                                                class="rounded-circle"
                                                 style="width: 40px; height: 40px; object-fit: cover;"
-                                                data-bs-toggle="tooltip" 
-                                                data-bs-placement="top" 
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
                                                 title="{{ $message->user->name }}"
                                                 onclick="showUserInfo({{ $message->user->id }})">
                                         </div>
@@ -238,7 +238,7 @@
 
                                 <div class="message-bubble {{ $message->user_id === auth()->id() ? 'bg-primary text-white' : 'bg-white border' }} p-3 rounded-3 position-relative"
                                     style="max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                    
+
                                     @if($message->user_id !== auth()->id() && ($loop->first || $message->user_id !== $messages[$loop->index-1]->user_id))
                                         <p class="small fw-bold mb-1">
                                             @if($conversation->is_group)
@@ -246,9 +246,9 @@
                                             @endif
                                         </p>
                                     @endif
-                                    
+
                                     <p class="mb-1 message-text">{{ $message->body }}</p>
-                                    
+
                                     @if($message->attachments->count() > 0)
                                         <div class="mt-2">
                                             @foreach($message->attachments as $attachment)
@@ -260,7 +260,7 @@
                                                 <div class="mb-2">
                                                     @if($isImage)
                                                         <div class="gallery-item" data-src="{{ $fileUrl }}" data-caption="{{ $attachment->file_name }}">
-                                                            <img src="{{ $fileUrl }}" 
+                                                            <img src="{{ $fileUrl }}"
                                                                  alt="{{ $attachment->file_name }}"
                                                                  class="img-thumbnail rounded"
                                                                  style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
@@ -292,7 +292,7 @@
                                             @endforeach
                                         </div>
                                     @endif
-                                    
+
                                     <div class="d-flex justify-content-end align-items-center mt-1">
                                         <p class="small {{ $message->user_id === auth()->id() ? 'text-white-50' : 'text-muted' }} mb-0 me-2">
                                             {{ $message->created_at->format('g:i a') }}
@@ -301,8 +301,8 @@
                                             <i class="bi bi-check2-all small {{ $message->read_at ? 'text-info' : 'text-white-50' }}"></i>
                                         @endif
                                     </div>
-                                    
-                                    <div class="message-actions d-none position-absolute" 
+
+                                    <div class="message-actions d-none position-absolute"
                                          style="top: -10px; {{ $message->user_id === auth()->id() ? 'left: -10px' : 'right: -10px' }}">
                                         <div class="btn-group btn-group-sm shadow">
                                             <button class="btn btn-light" title="Reply">
@@ -321,14 +321,14 @@
                         @endforeach
                     @endif
                 </div>
-                
+
                 <div class="border-top bg-light p-3 sticky-bottom" style="position: relative;">
                     <form id="message-form" method="POST" action="{{ route('messages.store', $conversation) }}" enctype="multipart/form-data">
                         @csrf
                         <div class="input-group has-validation">
-                            <textarea name="body" id="message-input" rows="1" class="form-control border-0 shadow-sm @error('body') is-invalid @enderror" 
+                            <textarea name="body" id="message-input" rows="1" class="form-control border-0 shadow-sm @error('body') is-invalid @enderror"
                                       placeholder="Type a message..." style="resize: none; border-radius: 20px !important;"></textarea>
-                            
+
                             <div class="input-group-append ms-2 d-flex align-items-center">
                                 <div class="btn-group">
                                     <label for="attachments" class="btn btn-light rounded-circle" title="Attach files">
@@ -346,14 +346,14 @@
                                     <i class="bi bi-send-fill"></i>
                                 </button>
                             </div>
-                            
+
                             @error('body')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div id="attachment-preview" class="mt-2 d-flex flex-wrap gap-2"></div>
                     </form>
-                    
+
                     <!-- Voice Message Recorder -->
                     <div id="voice-recorder-container" class="p-3 bg-white rounded shadow-sm mt-2" style="display: none;">
                         <div class="d-flex align-items-center justify-content-between">
@@ -374,7 +374,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Emoji Picker -->
                     <div id="emoji-picker-container" style="position: absolute; bottom: 80px; right: 10px; display: none; width: 350px; height: 300px; z-index: 1050; background: #ffffff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow-y: auto;">
                         <div class="emoji-tabs">
@@ -418,7 +418,7 @@
                             <button class="emoji-btn" data-emoji="😱">😱</button>
                             <button class="emoji-btn" data-emoji="😰">😰</button>
                             <button class="emoji-btn" data-emoji="😨">😨</button>
-                            
+
                             <!-- Hands & Gestures -->
                             <button class="emoji-btn" data-emoji="👍">👍</button>
                             <button class="emoji-btn" data-emoji="👎">👎</button>
@@ -431,7 +431,7 @@
                             <button class="emoji-btn" data-emoji="🤟">🤟</button>
                             <button class="emoji-btn" data-emoji="👌">👌</button>
                             <button class="emoji-btn" data-emoji="👋">👋</button>
-                            
+
                             <!-- Symbols -->
                             <button class="emoji-btn" data-emoji="❤️">❤️</button>
                             <button class="emoji-btn" data-emoji="🧡">🧡</button>
@@ -659,7 +659,7 @@
         bottom: 70px;
         height: 300px;
     }
-    
+
     .message-bubble {
         max-width: 85%;
     }
@@ -692,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaViewerPrev = document.getElementById('media-viewer-prev');
     const mediaViewerNext = document.getElementById('media-viewer-next');
     const mediaViewerCounter = document.getElementById('media-viewer-counter');
-    
+
     let mediaItems = [];
     let currentMediaIndex = 0;
     let isRecording = false;
@@ -702,18 +702,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let seconds = 0;
     let typingTimer;
     let isTyping = false;
-    
+
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-    
+
     // Auto-resize textarea
     textarea.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
-        
+
         // Typing indicator
         if (!isTyping) {
             isTyping = true;
@@ -723,30 +723,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     name: '{{ auth()->user()->name }}'
                 });
         }
-        
+
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
             isTyping = false;
         }, 2000);
     });
-    
+
     // Listen for typing events
     Echo.private(`conversation.{{ $conversation->id }}`)
         .listenForWhisper('typing', (e) => {
             if (e.user_id !== {{ auth()->id() }}) {
                 typingIndicator.classList.remove('d-none');
                 document.getElementById('typing-text').textContent = `${e.name} is typing`;
-                
+
                 clearTimeout(typingTimer);
                 typingTimer = setTimeout(() => {
                     typingIndicator.classList.add('d-none');
                 }, 2000);
             }
         });
-    
+
     // Scroll to bottom on page load
     scrollToBottom();
-    
+
     // Initialize media items for gallery
     document.querySelectorAll('.gallery-item').forEach(item => {
         mediaItems.push({
@@ -755,19 +755,19 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'image'
         });
     });
-    
+
     // Open media viewer when clicking on gallery items
     document.querySelectorAll('.gallery-item').forEach((item, index) => {
         item.addEventListener('click', () => {
             const mediaSrc = item.dataset.src;
             const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
-            
+
             currentMediaIndex = index;
             updateMediaViewer();
             mediaViewerModal.show();
         });
     });
-    
+
     // Media viewer navigation
     mediaViewerPrev.addEventListener('click', () => {
         if (currentMediaIndex > 0) {
@@ -775,17 +775,17 @@ document.addEventListener('DOMContentLoaded', function() {
             updateMediaViewer();
         }
     });
-    
+
     mediaViewerNext.addEventListener('click', () => {
         if (currentMediaIndex < mediaItems.length - 1) {
             currentMediaIndex++;
             updateMediaViewer();
         }
     });
-    
+
     function updateMediaViewer() {
         const media = mediaItems[currentMediaIndex];
-        
+
         if (media.type === 'image') {
             mediaViewerImage.src = media.src;
             mediaViewerImage.classList.remove('d-none');
@@ -796,12 +796,12 @@ document.addEventListener('DOMContentLoaded', function() {
             mediaViewerVideo.classList.remove('d-none');
             mediaViewerImage.classList.add('d-none');
         }
-        
+
         mediaViewerInfo.textContent = media.caption;
         mediaDownloadBtn.href = media.src;
         mediaViewerCounter.textContent = `${currentMediaIndex + 1}/${mediaItems.length}`;
     }
-    
+
     // File preview
     attachmentInput.addEventListener('change', function() {
         attachmentPreview.innerHTML = '';
@@ -809,18 +809,18 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(this.files).forEach((file, index) => {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'd-flex align-items-center attachment-preview-item';
-                
+
                 let iconClass = 'bi-file-earmark';
                 if (file.type.startsWith('image/')) iconClass = 'bi-image';
                 else if (file.type.startsWith('video/')) iconClass = 'bi-film';
                 else if (file.type.startsWith('audio/')) iconClass = 'bi-music-note-beamed';
-                
+
                 previewItem.innerHTML = `
                     <i class="bi ${iconClass} me-2"></i>
                     <span class="me-3" style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
                     <button type="button" class="btn-close btn-close-white" aria-label="Remove" data-index="${index}"></button>
                 `;
-                
+
                 attachmentPreview.appendChild(previewItem);
             });
 
@@ -829,23 +829,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     const index = parseInt(this.getAttribute('data-index'));
                     const files = Array.from(attachmentInput.files);
                     files.splice(index, 1);
-                    
+
                     const dataTransfer = new DataTransfer();
                     files.forEach(file => dataTransfer.items.add(file));
                     attachmentInput.files = dataTransfer.files;
-                    
+
                     attachmentInput.dispatchEvent(new Event('change'));
                 });
             });
         }
     });
-    
+
     // Toggle emoji picker
     emojiButton.addEventListener('click', function(e) {
         e.stopPropagation();
         emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'block' ? 'none' : 'block';
     });
-    
+
     // Emoji tab switching
     document.querySelectorAll('.emoji-tab').forEach(tab => {
         tab.addEventListener('click', function() {
@@ -854,14 +854,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // In a real app, you would filter emojis by category here
         });
     });
-    
+
     // Close emoji picker on outside click
     document.addEventListener('click', function(event) {
-        if (!emojiPickerContainer.contains(event.target) {
+        if (!emojiPickerContainer.contains(event.target)) {
             emojiPickerContainer.style.display = 'none';
         }
     });
-    
+
     // Insert emoji
     document.querySelectorAll('.emoji-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -876,7 +876,7 @@ document.addEventListener('DOMContentLoaded', function() {
             emojiPickerContainer.style.display = 'none';
         });
     });
-    
+
     // Voice message recording
     voiceMessageBtn.addEventListener('click', function() {
         voiceRecorderContainer.style.display = voiceRecorderContainer.style.display === 'block' ? 'none' : 'block';
@@ -884,30 +884,30 @@ document.addEventListener('DOMContentLoaded', function() {
             initVoiceRecorder();
         }
     });
-    
+
     function initVoiceRecorder() {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 mediaRecorder = new MediaRecorder(stream);
-                
+
                 mediaRecorder.ondataavailable = function(e) {
                     audioChunks.push(e.data);
                 };
-                
+
                 mediaRecorder.onstop = function() {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     const audioUrl = URL.createObjectURL(audioBlob);
-                    
+
                     // Create a download link for testing
                     const a = document.createElement('a');
                     a.href = audioUrl;
                     a.download = 'recording.wav';
                     a.click();
-                    
+
                     // In a real app, you would upload this to your server
                     console.log('Recording ready to upload:', audioBlob);
                 };
-                
+
                 recordButton.addEventListener('click', function() {
                     if (!isRecording) {
                         // Start recording
@@ -918,7 +918,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         recordButton.classList.add('btn-danger');
                         recordButton.classList.remove('btn-outline-danger');
                         sendRecordingBtn.disabled = true;
-                        
+
                         // Start timer
                         seconds = 0;
                         timerInterval = setInterval(() => {
@@ -926,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const mins = Math.floor(seconds / 60);
                             const secs = seconds % 60;
                             recordingTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                            
+
                             // Enable send button after 1 second
                             if (seconds >= 1) {
                                 sendRecordingBtn.disabled = false;
@@ -942,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         clearInterval(timerInterval);
                     }
                 });
-                
+
                 cancelRecordingBtn.addEventListener('click', function() {
                     if (isRecording) {
                         mediaRecorder.stop();
@@ -953,7 +953,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     recordingTimer.textContent = '00:00';
                     audioChunks = [];
                 });
-                
+
                 sendRecordingBtn.addEventListener('click', function() {
                     if (audioChunks.length > 0) {
                         // Create FormData and send to server
@@ -961,7 +961,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const formData = new FormData();
                         formData.append('audio', audioBlob, 'voice-message.wav');
                         formData.append('_token', '{{ csrf_token() }}');
-                        
+
                         fetch('{{ route('messages.store', $conversation) }}', {
                             method: 'POST',
                             body: formData
@@ -976,7 +976,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.error('Error sending voice message:', error);
                         });
                     }
-                    
+
                     voiceRecorderContainer.style.display = 'none';
                     recordingTimer.textContent = '00:00';
                     audioChunks = [];
@@ -988,7 +988,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 voiceRecorderContainer.style.display = 'none';
             });
     }
-    
+
     // Form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -996,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-        
+
         // Add typing indicator to show the message is being sent
         const typingElement = document.createElement('div');
         typingElement.className = 'd-flex justify-content-end mb-3';
@@ -1012,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         messageContainer.appendChild(typingElement);
         scrollToBottom();
-        
+
         fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -1030,16 +1030,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 attachmentInput.value = '';
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-                
+
                 // Remove typing indicator
                 messageContainer.removeChild(typingElement);
-                
+
                 fetchNewMessages();
             } else {
                 showAlert('Error: ' + (data.message || 'Failed to send message'), 'danger');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-                
+
                 // Remove typing indicator
                 messageContainer.removeChild(typingElement);
             }
@@ -1048,17 +1048,17 @@ document.addEventListener('DOMContentLoaded', function() {
             showAlert('Error: ' + error.message, 'danger');
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-            
+
             // Remove typing indicator
             messageContainer.removeChild(typingElement);
         });
     });
-    
+
     // Show conversation info modal
     conversationInfoBtn.addEventListener('click', function() {
         conversationInfoModal.show();
     });
-    
+
     function showAlert(message, type) {
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
@@ -1073,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 150);
         }, 5000);
     }
-    
+
     function fetchNewMessages() {
         const lastMessageId = messageContainer.dataset.lastMessageId || 0;
         fetch('{{ route('messages.latest', $conversation) }}?last_id=' + lastMessageId, {
@@ -1090,22 +1090,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!document.querySelector(`[data-message-id="${message.id}"]`)) {
                         const isCurrentUser = message.user_id === {{ auth()->id() }};
                         const messageHtml = `
-                            <div class="d-flex ${isCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 new-message" 
+                            <div class="d-flex ${isCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 new-message"
                                  data-message-id="${message.id}">
                                 ${!isCurrentUser ? `
                                     <div class="me-2">
-                                        <img src="${message.user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.user.name)}" 
-                                            alt="${message.user.name}" 
-                                            class="rounded-circle" 
+                                        <img src="${message.user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.user.name)}"
+                                            alt="${message.user.name}"
+                                            class="rounded-circle"
                                             style="width: 40px; height: 40px; object-fit: cover;"
-                                            data-bs-toggle="tooltip" 
-                                            data-bs-placement="top" 
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
                                             title="${message.user.name}">
                                     </div>
                                 ` : ''}
                                 <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-white border'} p-3 rounded-3"
                                      style="max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                    ${!isCurrentUser && (message.show_sender || {{ $conversation->is_group ? 'true' : 'false' }}) ? 
+                                    ${!isCurrentUser && (message.show_sender || {{ $conversation->is_group ? 'true' : 'false' }}) ?
                                         `<p class="small fw-bold mb-1">${message.user.name}</p>` : ''}
                                     <p class="mb-1 message-text">${message.body}</p>
                                     ${message.attachments.length > 0 ? `
@@ -1113,11 +1113,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                             ${message.attachments.map(attachment => {
                                                 const isImage = attachment.mime_type.startsWith('image/');
                                                 const isVideo = attachment.mime_type.startsWith('video/');
-                                                
+
                                                 if (isImage) {
                                                     return `
                                                         <div class="gallery-item" data-src="${attachment.file_url}" data-caption="${attachment.file_name}">
-                                                            <img src="${attachment.file_url}" 
+                                                            <img src="${attachment.file_url}"
                                                                  alt="${attachment.file_name}"
                                                                  class="img-thumbnail rounded"
                                                                  style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
@@ -1157,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p class="small ${isCurrentUser ? 'text-white-50' : 'text-muted'} mb-0 me-2">
                                             ${new Date(message.created_at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}
                                         </p>
-                                        ${isCurrentUser ? 
+                                        ${isCurrentUser ?
                                             `<i class="bi bi-check2-all small ${message.read_at ? 'text-info' : 'text-white-50'}"></i>` : ''}
                                     </div>
                                 </div>
@@ -1165,21 +1165,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                         messageContainer.insertAdjacentHTML('beforeend', messageHtml);
                         messageContainer.dataset.lastMessageId = Math.max(messageContainer.dataset.lastMessageId, message.id);
-                        
+
                         // Reinitialize gallery items for new messages
                         const newGalleryItems = messageContainer.querySelectorAll('.gallery-item');
                         newGalleryItems.forEach((item, index) => {
                             item.addEventListener('click', () => {
                                 const mediaSrc = item.dataset.src;
                                 const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
-                                
+
                                 // Find the index in the mediaItems array
                                 currentMediaIndex = Array.from(messageContainer.querySelectorAll('.gallery-item')).indexOf(item);
                                 updateMediaViewer();
                                 mediaViewerModal.show();
                             });
                         });
-                        
+
                         if (isNearBottom()) {
                             scrollToBottom();
                         }
@@ -1189,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error fetching messages:', error));
     }
-    
+
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -1197,21 +1197,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
-    
+
     function isNearBottom() {
         return messageContainer.scrollTop + messageContainer.clientHeight > messageContainer.scrollHeight - 100;
     }
-    
+
     function scrollToBottom() {
         messageContainer.scrollTo({
             top: messageContainer.scrollHeight,
             behavior: 'smooth'
         });
     }
-    
+
     // Poll for new messages every 3 seconds
     setInterval(fetchNewMessages, 3000);
-    
+
     // Create scroll-to-bottom button
     const scrollToBottomBtn = document.createElement('button');
     scrollToBottomBtn.className = 'btn btn-primary btn-sm rounded-circle position-fixed';
@@ -1225,19 +1225,19 @@ document.addEventListener('DOMContentLoaded', function() {
     scrollToBottomBtn.title = 'Scroll to bottom';
     scrollToBottomBtn.addEventListener('click', scrollToBottom);
     document.body.appendChild(scrollToBottomBtn);
-    
+
     // Show/hide scroll-to-bottom button based on scroll position
     messageContainer.addEventListener('scroll', function() {
         scrollToBottomBtn.style.display = isNearBottom() ? 'none' : 'block';
     });
-    
+
     // Mark messages as read when scrolling to bottom
     messageContainer.addEventListener('scroll', function() {
         if (isNearBottom()) {
             markMessagesAsRead();
         }
     });
-    
+
     function markMessagesAsRead() {
         const unreadMessages = document.querySelectorAll('.bi-check2-all.text-white-50');
         if (unreadMessages.length > 0) {
@@ -1260,12 +1260,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     // Initialize with messages marked as read if at bottom
     if (isNearBottom()) {
         markMessagesAsRead();
     }
-    
+
     // Link detection and formatting
     function linkifyText(text) {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -1273,12 +1273,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return `<a href="${url}" target="_blank" class="text-decoration-none">${url}</a>`;
         });
     }
-    
+
     // Apply link detection to existing messages
     document.querySelectorAll('.message-text').forEach(element => {
         element.innerHTML = linkifyText(element.textContent);
     });
-    
+
     // Apply link detection to new messages in fetchNewMessages
     // (see the messageHtml construction where we set the message body)
 });

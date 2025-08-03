@@ -35,7 +35,7 @@ class MessageController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('message-attachments', 'public');
-                
+
                 MessageAttachment::create([
                     'message_id' => $message->id,
                     'file_path' => $path,
@@ -52,6 +52,11 @@ class MessageController extends Controller
                 $conversation->users()->updateExistingPivot($user->id, [
                     'updated_at' => now(),
                 ]);
+                 $conversation->users()->updateExistingPivot($user->id, [
+                    'unread' => true,
+                ]);
+            }else{
+
             }
         }
 

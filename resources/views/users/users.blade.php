@@ -44,7 +44,7 @@
                         <div class="col-md-4">
                             <label for="search" class="form-label">Search</label>
                             <div class="input-group">
-                                <input type="text" name="search" id="search" class="form-control" 
+                                <input type="text" name="search" id="search" class="form-control"
                                        placeholder="Name or Email" value="{{ request('search') }}">
                                 <button class="btn btn-outline-primary" type="submit">Search</button>
                             </div>
@@ -86,6 +86,13 @@
                                                 <a href="" class="btn btn-sm btn-primary ms-1">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                                <form class="ms-1" action="{{ route('conversations.start-with-user') }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                                    <button type="submit" class="btn btn-sm btn-info" title="{{ __('Start Chat') }}">
+                                                        <i class="bi bi-chat-dots"></i>
+                                                    </button>
+                                                </form>
                                                 <form action="" method="POST" class="d-inline"
                                                       onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                     @csrf

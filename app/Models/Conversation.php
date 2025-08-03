@@ -14,10 +14,13 @@ class Conversation extends Model
     protected $fillable = [
         'name',
         'is_group',
+        'unread',
     ];
 
     protected $casts = [
         'is_group' => 'boolean',
+        
+
     ];
 
 
