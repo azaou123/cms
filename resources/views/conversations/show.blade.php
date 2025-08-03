@@ -54,12 +54,14 @@
                             <p class="text-muted">{{ $otherUsers->count() }} participants</p>
                         </div>
                     @else
-                        <div class="text-center mb-3">
-                            <img src="{{ $otherUsers->first()->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($otherUsers->first()->name) }}"
-                                 class="avatar-lg mb-2" alt="{{ $otherUsers->first()->name }}">
-                            <h4>{{ $otherUsers->first()->name }}</h4>
-                            <p class="text-muted">{{ $otherUsers->first()->email }}</p>
-                        </div>
+                        @if($otherUsers->isNotEmpty())
+                            <div class="text-center mb-3">
+                                <img src="{{ $otherUsers->first()->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($otherUsers->first()->name) }}"
+                                     class="avatar-lg mb-2" alt="{{ $otherUsers->first()->name }}">
+                                <h4>{{ $otherUsers->first()->name }}</h4>
+                                <p class="text-muted">{{ $otherUsers->first()->email }}</p>
+                            </div>
+                        @endif
                     @endif
 
                     <div class="mb-3">
@@ -228,8 +230,7 @@
                                                 style="width: 40px; height: 40px; object-fit: cover;"
                                                 data-bs-toggle="tooltip"
                                                 data-bs-placement="top"
-                                                title="{{ $message->user->name }}"
-                                                onclick="showUserInfo({{ $message->user->id }})">
+                                                title="{{ $message->user->name }}">
                                         </div>
                                     @else
                                         <div class="me-2" style="width: 40px;"></div>
@@ -323,7 +324,7 @@
                 </div>
 
                 <div class="border-top bg-light p-3 sticky-bottom" style="position: relative;">
-                    <form id="message-form" method="POST" action="{{ route('messages.store', $conversation) }}" enctype="multipart/form-data">
+                    <form id="message-form" enctype="multipart/form-data">
                         @csrf
                         <div class="input-group has-validation">
                             <textarea name="body" id="message-input" rows="1" class="form-control border-0 shadow-sm @error('body') is-invalid @enderror"
@@ -709,64 +710,79 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
+    // Initialize media gallery
+    initializeMediaGallery();
+
     // Auto-resize textarea
     textarea.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
 
-        // Typing indicator
-        if (!isTyping) {
-            isTyping = true;
-            Echo.private(`conversation.{{ $conversation->id }}`)
-                .whisper('typing', {
-                    user_id: {{ auth()->id() }},
-                    name: '{{ auth()->user()->name }}'
-                });
-        }
+        // Typing indicator (only if Echo is available)
+        if (typeof Echo !== 'undefined') {
+            if (!isTyping) {
+                isTyping = true;
+                try {
+                    Echo.private(`conversation.{{ $conversation->id }}`)
+                        .whisper('typing', {
+                            user_id: {{ auth()->id() }},
+                            name: '{{ auth()->user()->name }}'
+                        });
+                } catch (e) {
+                    console.log('Echo not available for typing indicator');
+                }
+            }
 
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
-            isTyping = false;
-        }, 2000);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                isTyping = false;
+            }, 2000);
+        }
     });
 
-    // Listen for typing events
-    Echo.private(`conversation.{{ $conversation->id }}`)
-        .listenForWhisper('typing', (e) => {
-            if (e.user_id !== {{ auth()->id() }}) {
-                typingIndicator.classList.remove('d-none');
-                document.getElementById('typing-text').textContent = `${e.name} is typing`;
+    // Listen for typing events (only if Echo is available)
+    if (typeof Echo !== 'undefined') {
+        try {
+            Echo.private(`conversation.{{ $conversation->id }}`)
+                .listenForWhisper('typing', (e) => {
+                    if (e.user_id !== {{ auth()->id() }}) {
+                        typingIndicator.classList.remove('d-none');
+                        document.getElementById('typing-text').textContent = `${e.name} is typing`;
 
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(() => {
-                    typingIndicator.classList.add('d-none');
-                }, 2000);
-            }
-        });
+                        clearTimeout(typingTimer);
+                        typingTimer = setTimeout(() => {
+                            typingIndicator.classList.add('d-none');
+                        }, 2000);
+                    }
+                });
+        } catch (e) {
+            console.log('Echo not available for real-time typing');
+        }
+    }
 
     // Scroll to bottom on page load
     scrollToBottom();
 
-    // Initialize media items for gallery
-    document.querySelectorAll('.gallery-item').forEach(item => {
-        mediaItems.push({
-            src: item.dataset.src,
-            caption: item.dataset.caption,
-            type: 'image'
-        });
-    });
+    function initializeMediaGallery() {
+        mediaItems = [];
+        document.querySelectorAll('.gallery-item').forEach((item, index) => {
+            const src = item.dataset.src;
+            const caption = item.dataset.caption;
+            const type = src && src.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
+            
+            mediaItems.push({
+                src: src,
+                caption: caption,
+                type: type
+            });
 
-    // Open media viewer when clicking on gallery items
-    document.querySelectorAll('.gallery-item').forEach((item, index) => {
-        item.addEventListener('click', () => {
-            const mediaSrc = item.dataset.src;
-            const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
-
-            currentMediaIndex = index;
-            updateMediaViewer();
-            mediaViewerModal.show();
+            item.addEventListener('click', () => {
+                currentMediaIndex = index;
+                updateMediaViewer();
+                mediaViewerModal.show();
+            });
         });
-    });
+    }
 
     // Media viewer navigation
     mediaViewerPrev.addEventListener('click', () => {
@@ -784,20 +800,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function updateMediaViewer() {
+        if (mediaItems.length === 0) return;
+        
         const media = mediaItems[currentMediaIndex];
 
         if (media.type === 'image') {
             mediaViewerImage.src = media.src;
             mediaViewerImage.classList.remove('d-none');
             mediaViewerVideo.classList.add('d-none');
-            mediaViewerVideo.pause();
+            if (mediaViewerVideo.pause) {
+                mediaViewerVideo.pause();
+            }
         } else {
             mediaViewerVideo.src = media.src;
             mediaViewerVideo.classList.remove('d-none');
             mediaViewerImage.classList.add('d-none');
         }
 
-        mediaViewerInfo.textContent = media.caption;
+        mediaViewerInfo.textContent = media.caption || '';
         mediaDownloadBtn.href = media.src;
         mediaViewerCounter.textContent = `${currentMediaIndex + 1}/${mediaItems.length}`;
     }
@@ -818,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewItem.innerHTML = `
                     <i class="bi ${iconClass} me-2"></i>
                     <span class="me-3" style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
-                    <button type="button" class="btn-close btn-close-white" aria-label="Remove" data-index="${index}"></button>
+                    <button type="button" class="btn-close" aria-label="Remove" data-index="${index}"></button>
                 `;
 
                 attachmentPreview.appendChild(previewItem);
@@ -857,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close emoji picker on outside click
     document.addEventListener('click', function(event) {
-        if (!emojiPickerContainer.contains(event.target)) {
+        if (!emojiPickerContainer.contains(event.target) && !emojiButton.contains(event.target)) {
             emojiPickerContainer.style.display = 'none';
         }
     });
@@ -886,6 +906,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function initVoiceRecorder() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showAlert('Voice recording is not supported in this browser.', 'warning');
+            voiceRecorderContainer.style.display = 'none';
+            return;
+        }
+
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 mediaRecorder = new MediaRecorder(stream);
@@ -896,16 +922,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 mediaRecorder.onstop = function() {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-
-                    // Create a download link for testing
-                    const a = document.createElement('a');
-                    a.href = audioUrl;
-                    a.download = 'recording.wav';
-                    a.click();
-
+                    
                     // In a real app, you would upload this to your server
                     console.log('Recording ready to upload:', audioBlob);
+                    
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
                 };
 
                 recordButton.addEventListener('click', function() {
@@ -915,8 +937,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         mediaRecorder.start();
                         isRecording = true;
                         recordButton.innerHTML = '<i class="bi bi-stop-fill"></i>';
-                        recordButton.classList.add('btn-danger');
                         recordButton.classList.remove('btn-outline-danger');
+                        recordButton.classList.add('btn-danger');
                         sendRecordingBtn.disabled = true;
 
                         // Start timer
@@ -937,8 +959,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         mediaRecorder.stop();
                         isRecording = false;
                         recordButton.innerHTML = '<i class="bi bi-mic-fill"></i>';
-                        recordButton.classList.remove('btn-danger');
                         recordButton.classList.add('btn-outline-danger');
+                        recordButton.classList.remove('btn-danger');
                         clearInterval(timerInterval);
                     }
                 });
@@ -952,6 +974,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     voiceRecorderContainer.style.display = 'none';
                     recordingTimer.textContent = '00:00';
                     audioChunks = [];
+                    
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
                 });
 
                 sendRecordingBtn.addEventListener('click', function() {
@@ -962,7 +987,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         formData.append('audio', audioBlob, 'voice-message.wav');
                         formData.append('_token', '{{ csrf_token() }}');
 
-                        fetch('{{ route('messages.store', $conversation) }}', {
+                        // You'll need to create a route for handling voice messages
+                        fetch(`/conversations/{{ $conversation->id }}/voice-message`, {
                             method: 'POST',
                             body: formData
                         })
@@ -974,12 +1000,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         })
                         .catch(error => {
                             console.error('Error sending voice message:', error);
+                            showAlert('Failed to send voice message', 'danger');
                         });
                     }
 
                     voiceRecorderContainer.style.display = 'none';
                     recordingTimer.textContent = '00:00';
                     audioChunks = [];
+                    
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
                 });
             })
             .catch(error => {
@@ -992,65 +1022,93 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        const formData = new FormData(form);
+        
+        const messageText = textarea.value.trim();
+        const files = attachmentInput.files;
+        
+        if (!messageText && files.length === 0) {
+            showAlert('Please enter a message or attach a file', 'warning');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('body', messageText);
+        formData.append('_token', '{{ csrf_token() }}');
+        
+        // Add files if any
+        if (files.length > 0) {
+            Array.from(files).forEach((file, index) => {
+                formData.append(`attachments[${index}]`, file);
+            });
+        }
+
         const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonHtml = submitButton.innerHTML;
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
 
         // Add typing indicator to show the message is being sent
         const typingElement = document.createElement('div');
-        typingElement.className = 'd-flex justify-content-end mb-3';
+        typingElement.className = 'd-flex justify-content-end mb-3 sending-message';
         typingElement.innerHTML = `
             <div class="message-bubble bg-light border p-3 rounded-3" style="max-width: 75%;">
                 <div class="typing-indicator">
                     <span></span>
                     <span></span>
                     <span></span>
-                    <span>Sending...</span>
+                    <span class="ms-1">Sending...</span>
                 </div>
             </div>
         `;
         messageContainer.appendChild(typingElement);
         scrollToBottom();
 
-        fetch(form.action, {
+        fetch(`/conversations/{{ $conversation->id }}/messages`, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 textarea.value = '';
                 textarea.style.height = 'auto';
                 attachmentPreview.innerHTML = '';
                 attachmentInput.value = '';
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-
-                // Remove typing indicator
-                messageContainer.removeChild(typingElement);
-
+                
+                // Remove sending indicator
+                const sendingMessage = document.querySelector('.sending-message');
+                if (sendingMessage) {
+                    sendingMessage.remove();
+                }
+                
+                // Fetch new messages
                 fetchNewMessages();
             } else {
-                showAlert('Error: ' + (data.message || 'Failed to send message'), 'danger');
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-
-                // Remove typing indicator
-                messageContainer.removeChild(typingElement);
+                throw new Error(data.message || 'Failed to send message');
             }
         })
         .catch(error => {
+            console.error('Error sending message:', error);
             showAlert('Error: ' + error.message, 'danger');
+            
+            // Remove sending indicator
+            const sendingMessage = document.querySelector('.sending-message');
+            if (sendingMessage) {
+                sendingMessage.remove();
+            }
+        })
+        .finally(() => {
             submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="bi bi-send-fill"></i>';
-
-            // Remove typing indicator
-            messageContainer.removeChild(typingElement);
+            submitButton.innerHTML = originalButtonHtml;
         });
     });
 
@@ -1076,118 +1134,156 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function fetchNewMessages() {
         const lastMessageId = messageContainer.dataset.lastMessageId || 0;
-        fetch('{{ route('messages.latest', $conversation) }}?last_id=' + lastMessageId, {
+        
+        fetch(`/conversations/{{ $conversation->id }}/messages/latest?last_id=${lastMessageId}`, {
             method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.messages && data.messages.length > 0) {
+            if (data.success && data.messages && data.messages.length > 0) {
                 data.messages.forEach(message => {
                     if (!document.querySelector(`[data-message-id="${message.id}"]`)) {
-                        const isCurrentUser = message.user_id === {{ auth()->id() }};
-                        const messageHtml = `
-                            <div class="d-flex ${isCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 new-message"
-                                 data-message-id="${message.id}">
-                                ${!isCurrentUser ? `
-                                    <div class="me-2">
-                                        <img src="${message.user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.user.name)}"
-                                            alt="${message.user.name}"
-                                            class="rounded-circle"
-                                            style="width: 40px; height: 40px; object-fit: cover;"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="${message.user.name}">
-                                    </div>
-                                ` : ''}
-                                <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-white border'} p-3 rounded-3"
-                                     style="max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                    ${!isCurrentUser && (message.show_sender || {{ $conversation->is_group ? 'true' : 'false' }}) ?
-                                        `<p class="small fw-bold mb-1">${message.user.name}</p>` : ''}
-                                    <p class="mb-1 message-text">${message.body}</p>
-                                    ${message.attachments.length > 0 ? `
-                                        <div class="mt-2">
-                                            ${message.attachments.map(attachment => {
-                                                const isImage = attachment.mime_type.startsWith('image/');
-                                                const isVideo = attachment.mime_type.startsWith('video/');
-
-                                                if (isImage) {
-                                                    return `
-                                                        <div class="gallery-item" data-src="${attachment.file_url}" data-caption="${attachment.file_name}">
-                                                            <img src="${attachment.file_url}"
-                                                                 alt="${attachment.file_name}"
-                                                                 class="img-thumbnail rounded"
-                                                                 style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
-                                                        </div>
-                                                    `;
-                                                } else if (isVideo) {
-                                                    return `
-                                                        <div class="ratio ratio-16x9">
-                                                            <video controls style="background-color: #000;">
-                                                                <source src="${attachment.file_url}" type="${attachment.mime_type}">
-                                                                Your browser does not support the video tag.
-                                                            </video>
-                                                        </div>
-                                                    `;
-                                                } else {
-                                                    return `
-                                                        <div class="d-flex align-items-center p-2 bg-light rounded">
-                                                            <div class="me-3">
-                                                                <i class="bi bi-file-earmark-text display-6 text-muted"></i>
-                                                            </div>
-                                                            <div class="flex-grow-1">
-                                                                <div class="fw-bold text-truncate" style="max-width: 200px;">${attachment.file_name}</div>
-                                                                <div class="small text-muted">${attachment.mime_type} • ${(attachment.size ? formatFileSize(attachment.size) : '')}</div>
-                                                            </div>
-                                                            <div>
-                                                                <a href="${attachment.file_url}" download class="btn btn-sm btn-outline-secondary">
-                                                                    <i class="bi bi-download"></i>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    `;
-                                                }
-                                            }).join('')}
-                                        </div>
-                                    ` : ''}
-                                    <div class="d-flex justify-content-end align-items-center mt-1">
-                                        <p class="small ${isCurrentUser ? 'text-white-50' : 'text-muted'} mb-0 me-2">
-                                            ${new Date(message.created_at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}
-                                        </p>
-                                        ${isCurrentUser ?
-                                            `<i class="bi bi-check2-all small ${message.read_at ? 'text-info' : 'text-white-50'}"></i>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        messageContainer.insertAdjacentHTML('beforeend', messageHtml);
-                        messageContainer.dataset.lastMessageId = Math.max(messageContainer.dataset.lastMessageId, message.id);
-
-                        // Reinitialize gallery items for new messages
-                        const newGalleryItems = messageContainer.querySelectorAll('.gallery-item');
-                        newGalleryItems.forEach((item, index) => {
-                            item.addEventListener('click', () => {
-                                const mediaSrc = item.dataset.src;
-                                const mediaType = mediaSrc.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image';
-
-                                // Find the index in the mediaItems array
-                                currentMediaIndex = Array.from(messageContainer.querySelectorAll('.gallery-item')).indexOf(item);
-                                updateMediaViewer();
-                                mediaViewerModal.show();
-                            });
-                        });
-
-                        if (isNearBottom()) {
-                            scrollToBottom();
-                        }
+                        addMessageToDOM(message);
+                        messageContainer.dataset.lastMessageId = Math.max(messageContainer.dataset.lastMessageId || 0, message.id);
                     }
                 });
+
+                // Reinitialize media gallery for new messages
+                initializeMediaGallery();
+
+                if (isNearBottom()) {
+                    scrollToBottom();
+                }
             }
         })
-        .catch(error => console.error('Error fetching messages:', error));
+        .catch(error => {
+            console.error('Error fetching messages:', error);
+        });
+    }
+
+    function addMessageToDOM(message) {
+        const isCurrentUser = message.user_id === {{ auth()->id() }};
+        const messageDate = new Date(message.created_at);
+        
+        // Check if we need to show sender name (first message from user or group chat)
+        const previousMessage = messageContainer.querySelector('[data-message-id]:last-child');
+        const showSender = !isCurrentUser && (
+            !previousMessage || 
+            previousMessage.dataset.userId !== message.user_id.toString() ||
+            {{ $conversation->is_group ? 'true' : 'false' }}
+        );
+
+        const messageElement = document.createElement('div');
+        messageElement.className = `d-flex ${isCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 new-message`;
+        messageElement.setAttribute('data-message-id', message.id);
+        messageElement.setAttribute('data-user-id', message.user_id);
+
+        let attachmentsHtml = '';
+        if (message.attachments && message.attachments.length > 0) {
+            attachmentsHtml = '<div class="mt-2">';
+            message.attachments.forEach(attachment => {
+                const isImage = attachment.mime_type.startsWith('image/');
+                const isVideo = attachment.mime_type.startsWith('video/');
+
+                if (isImage) {
+                    attachmentsHtml += `
+                        <div class="mb-2">
+                            <div class="gallery-item" data-src="${attachment.file_url}" data-caption="${attachment.file_name}">
+                                <img src="${attachment.file_url}"
+                                     alt="${attachment.file_name}"
+                                     class="img-thumbnail rounded"
+                                     style="max-width: 100%; max-height: 300px; cursor: zoom-in;">
+                            </div>
+                        </div>
+                    `;
+                } else if (isVideo) {
+                    attachmentsHtml += `
+                        <div class="mb-2">
+                            <div class="ratio ratio-16x9">
+                                <video controls style="background-color: #000;">
+                                    <source src="${attachment.file_url}" type="${attachment.mime_type}">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const fileSize = attachment.size ? formatFileSize(attachment.size) : 'Unknown size';
+                    attachmentsHtml += `
+                        <div class="mb-2">
+                            <div class="d-flex align-items-center p-2 bg-light rounded">
+                                <div class="me-3">
+                                    <i class="bi bi-file-earmark-text display-6 text-muted"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-truncate" style="max-width: 200px;">${attachment.file_name}</div>
+                                    <div class="small text-muted">${attachment.mime_type} • ${fileSize}</div>
+                                </div>
+                                <div>
+                                    <a href="${attachment.file_url}" download class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            attachmentsHtml += '</div>';
+        }
+
+        messageElement.innerHTML = `
+            ${!isCurrentUser ? `
+                <div class="me-2" style="width: 40px;">
+                    ${showSender ? `
+                        <img src="${message.user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.user.name)}"
+                            alt="${message.user.name}"
+                            class="rounded-circle"
+                            style="width: 40px; height: 40px; object-fit: cover;"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="${message.user.name}">
+                    ` : ''}
+                </div>
+            ` : ''}
+            <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-white border'} p-3 rounded-3 position-relative"
+                 style="max-width: 75%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                ${showSender ? `<p class="small fw-bold mb-1">${message.user.name}</p>` : ''}
+                <p class="mb-1 message-text">${linkifyText(message.body)}</p>
+                ${attachmentsHtml}
+                <div class="d-flex justify-content-end align-items-center mt-1">
+                    <p class="small ${isCurrentUser ? 'text-white-50' : 'text-muted'} mb-0 me-2">
+                        ${messageDate.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}
+                    </p>
+                    ${isCurrentUser ? `<i class="bi bi-check2-all small ${message.read_at ? 'text-info' : 'text-white-50'}"></i>` : ''}
+                </div>
+                <div class="message-actions d-none position-absolute"
+                     style="top: -10px; ${isCurrentUser ? 'left: -10px' : 'right: -10px'}">
+                    <div class="btn-group btn-group-sm shadow">
+                        <button class="btn btn-light" title="Reply">
+                            <i class="bi bi-reply"></i>
+                        </button>
+                        <button class="btn btn-light" title="Forward">
+                            <i class="bi bi-forward"></i>
+                        </button>
+                        <button class="btn btn-light" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        messageContainer.appendChild(messageElement);
     }
 
     function formatFileSize(bytes) {
@@ -1199,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isNearBottom() {
-        return messageContainer.scrollTop + messageContainer.clientHeight > messageContainer.scrollHeight - 100;
+        return messageContainer.scrollTop + messageContainer.clientHeight >= messageContainer.scrollHeight - 100;
     }
 
     function scrollToBottom() {
@@ -1209,8 +1305,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Poll for new messages every 3 seconds
-    setInterval(fetchNewMessages, 3000);
+    // Poll for new messages every 5 seconds
+    setInterval(fetchNewMessages, 5000);
 
     // Create scroll-to-bottom button
     const scrollToBottomBtn = document.createElement('button');
@@ -1241,12 +1337,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function markMessagesAsRead() {
         const unreadMessages = document.querySelectorAll('.bi-check2-all.text-white-50');
         if (unreadMessages.length > 0) {
-            fetch('{{ route('messages.markAsRead', $conversation) }}', {
+            fetch(`/conversations/{{ $conversation->id }}/mark-as-read`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => response.json())
@@ -1257,6 +1354,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         icon.classList.add('text-info');
                     });
                 }
+            })
+            .catch(error => {
+                console.error('Error marking messages as read:', error);
             });
         }
     }
@@ -1268,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Link detection and formatting
     function linkifyText(text) {
+        if (!text) return '';
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         return text.replace(urlRegex, url => {
             return `<a href="${url}" target="_blank" class="text-decoration-none">${url}</a>`;
@@ -1276,11 +1377,126 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply link detection to existing messages
     document.querySelectorAll('.message-text').forEach(element => {
-        element.innerHTML = linkifyText(element.textContent);
+        const originalText = element.textContent;
+        element.innerHTML = linkifyText(originalText);
     });
 
-    // Apply link detection to new messages in fetchNewMessages
-    // (see the messageHtml construction where we set the message body)
+    // Handle mark as read button
+    document.getElementById('mark-as-read').addEventListener('click', function(e) {
+        e.preventDefault();
+        markMessagesAsRead();
+    });
+
+    // Handle keyboard shortcuts
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Handle message actions
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.message-actions button')) {
+            const action = e.target.closest('button');
+            const messageId = e.target.closest('[data-message-id]').dataset.messageId;
+            
+            if (action.title === 'Delete') {
+                if (confirm('Are you sure you want to delete this message?')) {
+                    // Handle message deletion
+                    console.log('Delete message:', messageId);
+                }
+            } else if (action.title === 'Reply') {
+                // Handle message reply
+                console.log('Reply to message:', messageId);
+            } else if (action.title === 'Forward') {
+                // Handle message forwarding
+                console.log('Forward message:', messageId);
+            }
+        }
+    });
+
+    // Handle dropdown actions
+    document.getElementById('view-media').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Filter and show only media items
+        const mediaGalleryItems = document.querySelectorAll('.gallery-item');
+        if (mediaGalleryItems.length > 0) {
+            currentMediaIndex = 0;
+            updateMediaViewer();
+            mediaViewerModal.show();
+        } else {
+            showAlert('No media found in this conversation', 'info');
+        }
+    });
+
+    document.getElementById('view-files').addEventListener('click', function(e) {
+        e.preventDefault();
+        showAlert('File viewer feature coming soon', 'info');
+    });
+
+    document.getElementById('delete-conversation').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
+            // Handle conversation deletion
+            window.location.href = '{{ route("conversations.index") }}';
+        }
+    });
+
+    document.getElementById('leave-group').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to leave this group?')) {
+            // Handle leaving group
+            window.location.href = '{{ route("conversations.index") }}';
+        }
+    });
+
+    // Search messages functionality
+    document.getElementById('search-messages-btn').addEventListener('click', function() {
+        const searchTerm = prompt('Enter search term:');
+        if (searchTerm) {
+            const messages = document.querySelectorAll('.message-text');
+            let found = false;
+            
+            messages.forEach(msg => {
+                if (msg.textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    msg.closest('[data-message-id]').scrollIntoView({ behavior: 'smooth' });
+                    msg.style.backgroundColor = 'yellow';
+                    setTimeout(() => {
+                        msg.style.backgroundColor = '';
+                    }, 2000);
+                    found = true;
+                    return;
+                }
+            });
+            
+            if (!found) {
+                showAlert('No messages found containing: ' + searchTerm, 'info');
+            }
+        }
+    });
+
+    // Auto-scroll to bottom for new messages from current user
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length > 0) {
+                const addedNode = mutation.addedNodes[0];
+                if (addedNode.nodeType === 1 && addedNode.classList.contains('new-message')) {
+                    const isCurrentUserMessage = addedNode.dataset.userId == {{ auth()->id() }};
+                    if (isCurrentUserMessage || isNearBottom()) {
+                        setTimeout(() => scrollToBottom(), 100);
+                    }
+                }
+            }
+        });
+    });
+
+    observer.observe(messageContainer, { childList: true });
+
+    // Initialize on page load
+    setTimeout(() => {
+        fetchNewMessages();
+    }, 1000);
 });
 </script>
 @endsection

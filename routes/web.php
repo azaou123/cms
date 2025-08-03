@@ -130,9 +130,17 @@ Route::middleware('auth')->group(function () {
 
     Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
     Route::get('/messages/{conversation}', [MessageController::class, 'pollMessages'])->name('messages.poll');
-    Route::get('/conversations/{conversation}/messages/latest', [MessageController::class, 'latest'])->name('messages.latest');
+    
     Route::match(['get', 'post'], '/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('messages.typing');
-    Route::post('/messages/{message}/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.markAsRead');
+    
+     Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'storeMessage'])
+        ->name('conversations.messages.store');
+    Route::get('/conversations/{conversation}/messages/latest', [ConversationController::class, 'getLatestMessages'])
+        ->name('conversations.messages.latest');
+    Route::post('/conversations/{conversation}/mark-as-read', [ConversationController::class, 'markAsRead'])
+        ->name('conversations.mark-as-read');
+    Route::post('/conversations/{conversation}/voice-message', [ConversationController::class, 'storeVoiceMessage'])
+        ->name('conversations.voice-message');
 });
 
 // Events
