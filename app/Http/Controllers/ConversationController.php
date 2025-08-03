@@ -114,6 +114,8 @@ class ConversationController extends Controller
         return view('conversations.show', compact('conversation', 'messages', 'otherUsers'));
     }
 
+    // hada ghi test
+
     public function getLatestMessages(Conversation $conversation, Request $request)
     {
         // Check if the user is part of this conversation
@@ -122,7 +124,7 @@ class ConversationController extends Controller
         }
 
         $lastMessageId = $request->get('last_id', 0);
-        
+
         $messages = $conversation->messages()
             ->with(['user', 'attachments'])
             ->where('id', '>', $lastMessageId)
@@ -262,7 +264,7 @@ class ConversationController extends Controller
         if ($request->hasFile('audio')) {
             $file = $request->file('audio');
             $path = $file->store('voice_messages', 'public');
-            
+
             $attachment = new Attachment([
                 'file_name' => 'voice-message-' . time() . '.wav',
                 'file_path' => $path,
