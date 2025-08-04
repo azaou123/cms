@@ -51,13 +51,16 @@ class MessageController extends Controller
             if ($user->id !== Auth::id()) {
                 $conversation->users()->updateExistingPivot($user->id, [
                     'updated_at' => now(),
-                ]);
-                 $conversation->users()->updateExistingPivot($user->id, [
                     'unread' => true,
                 ]);
-            }else{
+                 $result = $conversation->users()->updateExistingPivot($user->id, [
+                    'updated_at' => now(),
+                    'unread' => true,
+                ]);
 
+                dd("Mis à jour ?", $result);
             }
+
         }
 
         return response()->json(['success' => true, 'message_id' => $message->id]);

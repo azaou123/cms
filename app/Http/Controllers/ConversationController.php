@@ -14,11 +14,17 @@ class ConversationController extends Controller
 {
     public function index()
     {
+
         $conversations = Auth::user()->conversations()
-            ->with(['users' => function($query) {
-                $query->where('users.id', '!=', Auth::id());
-            }, 'lastMessage'])
+            ->whereHas('messages')
+            ->with([
+                'users' => function($query) {
+                    $query->where('users.id', '!=', Auth::id());
+                },
+                'lastMessage'
+            ])
             ->get();
+
 
         return view('conversations.index', compact('conversations'));
     }
@@ -106,6 +112,7 @@ class ConversationController extends Controller
         // Update last read timestamp
         $conversation->users()->updateExistingPivot(Auth::id(), [
             'last_read_at' => now(),
+            'unread' => false,
         ]);
 
         $messages = $conversation->messages()->with('user', 'attachments')->orderBy('created_at', 'asc')->get();
@@ -215,6 +222,14 @@ class ConversationController extends Controller
 
         // Update conversation's updated_at timestamp
         $conversation->touch();
+        foreach ($conversation->users as $user) {
+            if ($user->id !== Auth::id()) {
+                $conversation->users()->updateExistingPivot($user->id, [
+                    'unread' => true,
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
