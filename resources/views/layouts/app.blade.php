@@ -24,7 +24,7 @@
       .icon-notification {
       position: relative;
       display: inline-block;
-      font-size: 32px;
+      font-size: 30px;
     }
 
     .icon-notification .badge {
@@ -117,7 +117,7 @@
                             @endphp
 
                             <li class="nav-item">
-                                <a class="text-dark fs-4 me-0 icon-notification" href="{{ route('conversations.index') }}">
+                                <a class="text-dark fs-5 me-0 icon-notification" href="{{ route('conversations.index') }}">
                                     <i class="bi bi-chat-dots"></i>
                                     @if ($unreadConversation)
                                         <span class="badge">{{ $unreadConversation }}</span>

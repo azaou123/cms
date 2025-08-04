@@ -14,12 +14,12 @@ class Conversation extends Model
     protected $fillable = [
         'name',
         'is_group',
-        'unread',
+
     ];
 
     protected $casts = [
         'is_group' => 'boolean',
-        
+
 
     ];
 
@@ -28,6 +28,7 @@ class Conversation extends Model
     {
         return $this->belongsToMany(User::class, 'conversation_user')
             ->withPivot('last_read_at')
+            ->withPivot('unread')
             ->withTimestamps();
     }
 
