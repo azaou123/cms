@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .badge{
+
+      position: absolute;
+      right: 15px;
+
+
+    }
+</style>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>{{ __('Conversations') }}</h2>
@@ -36,9 +45,20 @@
                         </div>
                         <div>
                             @if($conversation->lastMessage)
-                                <small class="text-muted">{{ $conversation->lastMessage->created_at->diffForHumans() }}</small>
+                                <div class="mb-2" ><small class="text-muted ">{{ $conversation->lastMessage->created_at->diffForHumans() }}</small></div>
+                                <?php
+                                    $unreadmessagescount = $conversation->messages()
+                                    ->whereNull('read_at')
+                                    ->where('user_id','!=',auth()->id())
+                                    ->count();
+                                ?>
+                                @if($unreadmessagescount)
+                                    <div style="padding: 2px 6px;font-size: 12px;font-weight: bold;line-height: 1;min-width: 18px;text-align: center;}" class="badge bg-primary text-white rounded-circle text-center"> {{$unreadmessagescount}} </div>
+                                @endif
                             @endif
                         </div>
+
+
                     </div>
                 </a>
             @endforeach
